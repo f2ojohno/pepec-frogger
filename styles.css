@@ -1,0 +1,153 @@
+body {
+  font-family: 'Arial', sans-serif;
+  text-align: center;
+  background: linear-gradient(to bottom, #87CEEB, #f2f2f2);
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+header {
+  padding: 20px;
+  background-color: #333;
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+  margin: 0;
+  font-size: 2.5em;
+}
+
+.game-container {
+  max-width: 800px;
+  margin: 20px auto;
+  position: relative;
+}
+
+#gameCanvas {
+  border: 2px solid #333;
+  background-color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+}
+
+#game-ui {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: white;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 1.2em;
+  z-index: 10;
+}
+
+#score, #highScore, #level {
+  margin: 5px 0;
+  font-weight: bold;
+}
+
+.login-container, .message, .leaderboard {
+  max-width: 800px;
+  margin: 20px auto;
+}
+
+.login-container {
+  transition: opacity 0.3s ease; /* Add this line for fade-out effect */
+}
+
+.login-container.hidden {
+  opacity: 0;
+}
+
+#login button {
+  padding: 12px 24px;
+  font-size: 1.2em;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+#login button:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+}
+
+#login button:active {
+  transform: translateY(0);
+}
+
+.message {
+  font-weight: bold;
+  color: #333;
+  font-size: 1.3em;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
+}
+
+.leaderboard h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.5em;
+}
+
+.leaderboard-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.leaderboard-list li {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  font-size: 1.1em;
+  transition: background-color 0.3s;
+}
+
+.leaderboard-list li:hover {
+  background-color: #f5f5f5;
+}
+
+.leaderboard-list li:last-child {
+  border-bottom: none;
+}
+
+/* Responsive design */
+@media (max-width: 800px) {
+  .game-container, .login-container, .message, .leaderboard {
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #gameCanvas {
+    width: 100%;
+    height: auto;
+  }
+
+  #login button {
+    font-size: 1em;
+    padding: 10px 20px;
+  }
+
+  #game-ui {
+    font-size: 1em;
+    padding: 8px;
+  }
+}
