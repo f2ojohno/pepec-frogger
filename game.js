@@ -397,10 +397,9 @@ function handleGameOver() {
 }
 
 // Firebase Leaderboard Functions
-const db = firebase.database();
-const leaderboardRef = db.ref("leaderboard");
-
 function submitScore(finalScore) {
+  const db = firebase.database();
+  const leaderboardRef = db.ref("leaderboard");
   console.log("Submitting score:", finalScore, "for user:", userAddress);
   const entry = { user: userAddress || "Anonymous", score: finalScore, timestamp: Date.now() };
 
@@ -417,6 +416,8 @@ function submitScore(finalScore) {
 }
 
 function loadLeaderboard() {
+  const db = firebase.database();
+  const leaderboardRef = db.ref("leaderboard");
   console.log("Loading leaderboard...");
   leaderboardRef.orderByChild("score").limitToLast(10).once("value", snapshot => {
     const data = snapshot.val();
