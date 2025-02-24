@@ -5,10 +5,11 @@ body {
   margin: 0;
   padding: 0;
   line-height: 1.6;
+  overflow: hidden;
 }
 
 header {
-  padding: 20px;
+  padding: 10px;
   background-color: #333;
   color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
@@ -16,12 +17,12 @@ header {
 
 h1 {
   margin: 0;
-  font-size: 2.5em;
+  font-size: 1.5em;
 }
 
 .game-container {
   max-width: 800px;
-  margin: 20px auto;
+  margin: 10px auto;
   position: relative;
 }
 
@@ -30,32 +31,36 @@ h1 {
   background-color: #fff;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   border-radius: 5px;
+  width: 100%;
+  height: auto;
+  max-height: 600px;
+  touch-action: none;
 }
 
 #game-ui {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 5px;
+  left: 5px;
   color: white;
   background: rgba(0, 0, 0, 0.7);
-  padding: 10px;
+  padding: 5px;
   border-radius: 5px;
-  font-size: 1.2em;
+  font-size: 0.9em;
   z-index: 10;
 }
 
 #score, #highScore, #level {
-  margin: 5px 0;
+  margin: 3px 0;
   font-weight: bold;
 }
 
 .login-container, .message, .leaderboard {
   max-width: 800px;
-  margin: 20px auto;
+  margin: 10px auto;
 }
 
 .login-container {
-  transition: opacity 0.3s ease; /* Add this line for fade-out effect */
+  transition: opacity 0.3s ease;
 }
 
 .login-container.hidden {
@@ -63,8 +68,8 @@ h1 {
 }
 
 #login button {
-  padding: 12px 24px;
-  font-size: 1.2em;
+  padding: 10px 20px;
+  font-size: 1em;
   background-color: #4CAF50;
   color: white;
   border: none;
@@ -86,25 +91,25 @@ h1 {
 .message {
   font-weight: bold;
   color: #333;
-  font-size: 1.3em;
+  font-size: 1em;
   background: rgba(255, 255, 255, 0.8);
-  padding: 10px;
+  padding: 5px;
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .leaderboard {
   background: white;
-  padding: 20px;
+  padding: 10px;
   border-radius: 5px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 }
 
 .leaderboard h3 {
   margin-top: 0;
   color: #333;
-  font-size: 1.5em;
+  font-size: 1.2em;
 }
 
 .leaderboard-list {
@@ -114,40 +119,29 @@ h1 {
 }
 
 .leaderboard-list li {
-  padding: 10px;
+  padding: 5px;
   border-bottom: 1px solid #ddd;
-  font-size: 1.1em;
-  transition: background-color 0.3s;
-}
-
-.leaderboard-list li:hover {
-  background-color: #f5f5f5;
+  font-size: 0.9em;
 }
 
 .leaderboard-list li:last-child {
   border-bottom: none;
 }
 
-/* Responsive design */
 @media (max-width: 800px) {
   .game-container, .login-container, .message, .leaderboard {
-    max-width: 90%;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: 100%;
+    margin: 5px 0;
   }
-
   #gameCanvas {
     width: 100%;
-    height: auto;
+    height: 50vh;
   }
-
-  #login button {
-    font-size: 1em;
-    padding: 10px 20px;
-  }
-
   #game-ui {
-    font-size: 1em;
-    padding: 8px;
+    font-size: 0.8em;
+    padding: 3px;
+  }
+  header h1 {
+    font-size: 1.2em;
   }
 }
