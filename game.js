@@ -270,7 +270,7 @@ function gameLoop() {
 // Movement Controls
 const step = 15; // Consistent step size
 let touchStartX = null, touchStartY = null;
-let lastTouchMove = 0; // Debounce timer
+let lastTouchMove = 0;
 
 canvas.addEventListener("touchstart", (e) => {
   e.preventDefault();
@@ -285,7 +285,7 @@ canvas.addEventListener("touchmove", (e) => {
   if (gameOver || !touchStartX || !touchStartY) return;
 
   const now = Date.now();
-  if (now - lastTouchMove < 50) return; // Faster debounce: 50ms
+  if (now - lastTouchMove < 50) return; // 50ms debounce
 
   const touch = e.touches[0];
   const deltaX = touch.clientX - touchStartX;
@@ -373,45 +373,38 @@ function handleGameOver() {
   }, 100);
 }
 
+// Local Storage Leaderboard Functions
 function submitScore(finalScore) {
-  fetch("/submitScore", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user: userAddress, score: finalScore })
-  })
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-      console.log("Score submitted:", data);
-      document.getElementById("message").innerText += " | Score submitted!";
-      loadLeaderboard();
-    })
-    .catch(err => {
-      console.error("Error submitting score:", err);
-      document.getElementById("message").innerText += " | Failed to submit score.";
-    });
+  console.log("Submitting score:", finalScore, "for user:", userAddress);
+  let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+  leaderboard.push({ user: userAddress || "Anonymous", score: finalScore });
+  
+  // Deduplicate and sort
+  const uniqueEntries = {};
+  leaderboard.forEach(entry => {
+    if (!uniqueEntries[entry.user.toLowerCase()] || entry.score > uniqueEntries[entry.user.toLowerCase()].score) {
+      uniqueEntries[entry.user.toLowerCase()] = { user: entry.user, score: entry.score };
+    }
+  });
+  leaderboard = Object.values(uniqueEntries);
+  leaderboard.sort((a, b) => b.score - a.score);
+  leaderboard = leaderboard.slice(0, 10);
+
+  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+  console.log("Leaderboard updated in localStorage:", leaderboard);
+  document.getElementById("message").innerText += " | Score submitted!";
+  loadLeaderboard();
 }
 
 function loadLeaderboard() {
-  fetch("/leaderboard")
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-      console.log("Leaderboard data:", data);
-      const leaderboardList = document.getElementById("leaderboardList");
-      leaderboardList.innerHTML = "";
-      data.forEach(entry => {
-        let li = document.createElement("li");
-        li.textContent = `${entry.user.substring(0, 6)}...${entry.user.substring(entry.user.length - 4)} : ${entry.score}`;
-        leaderboardList.appendChild(li);
-      });
-    })
-    .catch(err => {
-      console.error("Error loading leaderboard:", err);
-      document.getElementById("message").innerText += " | Failed to load leaderboard.";
-    });
+  console.log("Loading leaderboard...");
+  let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+  console.log("Leaderboard data:", leaderboard);
+  const leaderboardList = document.getElementById("leaderboardList");
+  leaderboardList.innerHTML = "";
+  leaderboard.forEach(entry => {
+    let li = document.createElement("li");
+    li.textContent = `${entry.user.substring(0, 6)}...${entry.user.substring(entry.user.length - 4)} : ${entry.score}`;
+    leaderboardList.appendChild(li);
+  });
 }
