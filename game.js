@@ -11,9 +11,8 @@ console.log("Configuration loaded.");
 // ===== AUDIO SETUP =====
 const backgroundMusic = new Audio("background_music.mp3");
 backgroundMusic.loop = true;
-backgroundMusic.volume = 0.5; // Adjust volume (0.0 to 1.0)
+backgroundMusic.volume = 0.5;
 
-// Function to play jump sound
 function playJumpSound() {
   const jumpSound = new Audio("jump_sound.mp3");
   jumpSound.volume = 0.7;
@@ -282,7 +281,7 @@ function gameLoop() {
 }
 
 // Movement Controls
-const step = 15; // Consistent step size
+const step = 15;
 let touchStartX = null, touchStartY = null;
 let lastTouchMove = 0;
 
@@ -397,37 +396,53 @@ function handleGameOver() {
   }, 100);
 }
 
-// Local Storage Leaderboard Functions
+// Firebase Leaderboard Functions
+const db = firebase.database();
+const leaderboardRef = db.ref("leaderboard");
+
 function submitScore(finalScore) {
   console.log("Submitting score:", finalScore, "for user:", userAddress);
-  let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-  leaderboard.push({ user: userAddress || "Anonymous", score: finalScore });
-  
-  const uniqueEntries = {};
-  leaderboard.forEach(entry => {
-    if (!uniqueEntries[entry.user.toLowerCase()] || entry.score > uniqueEntries[entry.user.toLowerCase()].score) {
-      uniqueEntries[entry.user.toLowerCase()] = { user: entry.user, score: entry.score };
-    }
-  });
-  leaderboard = Object.values(uniqueEntries);
-  leaderboard.sort((a, b) => b.score - a.score);
-  leaderboard = leaderboard.slice(0, 10);
+  const entry = { user: userAddress || "Anonymous", score: finalScore, timestamp: Date.now() };
 
-  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-  console.log("Leaderboard updated in localStorage:", leaderboard);
-  document.getElementById("message").innerText += " | Score submitted!";
-  loadLeaderboard();
+  leaderboardRef.push(entry)
+    .then(() => {
+      console.log("Score submitted to Firebase");
+      document.getElementById("message").innerText += " | Score submitted!";
+      loadLeaderboard();
+    })
+    .catch(err => {
+      console.error("Error submitting score to Firebase:", err);
+      document.getElementById("message").innerText += " | Failed to submit score.";
+    });
 }
 
 function loadLeaderboard() {
   console.log("Loading leaderboard...");
-  let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-  console.log("Leaderboard data:", leaderboard);
-  const leaderboardList = document.getElementById("leaderboardList");
-  leaderboardList.innerHTML = "";
-  leaderboard.forEach(entry => {
-    let li = document.createElement("li");
-    li.textContent = `${entry.user.substring(0, 6)}...${entry.user.substring(entry.user.length - 4)} : ${entry.score}`;
-    leaderboardList.appendChild(li);
+  leaderboardRef.orderByChild("score").limitToLast(10).once("value", snapshot => {
+    const data = snapshot.val();
+    if (!data) {
+      console.log("No leaderboard data yet");
+      document.getElementById("leaderboardList").innerHTML = "<li>No scores yet!</li>";
+      return;
+    }
+
+    let leaderboard = [];
+    for (let key in data) {
+      leaderboard.push(data[key]);
+    }
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard = leaderboard.slice(0, 10);
+
+    console.log("Leaderboard data:", leaderboard);
+    const leaderboardList = document.getElementById("leaderboardList");
+    leaderboardList.innerHTML = "";
+    leaderboard.forEach(entry => {
+      let li = document.createElement("li");
+      li.textContent = `${entry.user.substring(0, 6)}...${entry.user.substring(entry.user.length - 4)} : ${entry.score}`;
+      leaderboardList.appendChild(li);
+    });
+  }, err => {
+    console.error("Error loading leaderboard from Firebase:", err);
+    document.getElementById("message").innerText += " | Failed to load leaderboard.";
   });
 }
