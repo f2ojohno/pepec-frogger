@@ -1,16 +1,18 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const fs = require("fs").promises; // Use promises for async file operations
+const cors = require("cors");
 const app = express();
 
 app.use(express.static("."));
 app.use(bodyParser.json());
+app.use(cors()); // Enable CORS for frontend requests
 
-// Set Content Security Policy to allow 'unsafe-eval' for development
+// Set Content Security Policy to allow embedding on Warpcast
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self';"
+    "default-src 'self'; frame-ancestors 'self' https://warpcast.com https://*.warpcast.com; script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self';"
   );
   next();
 });
@@ -50,6 +52,20 @@ function deduplicateLeaderboard(leaderboard) {
   return Object.values(uniqueEntries);
 }
 
+// Warpcast Frame Endpoint
+app.post("/frame-endpoint", async (req, res) => {
+  console.log("Received Warpcast Frame request...");
+  res.json({
+    "image": "https://your-deployed-url.com/silver_robot_frog.png",
+    "post_url": "https://your-deployed-url.com/",
+    "buttons": [
+      { "text": "Play Now", "action": "post" },
+      { "text": "Leaderboard", "action": "post", "post_url": "/leaderboard" }
+    ]
+  });
+});
+
+// Submit Score
 app.post("/submitScore", async (req, res) => {
   console.log("Received score submission request...");
   const { user, score } = req.body;
@@ -89,6 +105,7 @@ app.post("/submitScore", async (req, res) => {
   }
 });
 
+// Get Leaderboard
 app.get("/leaderboard", async (req, res) => {
   console.log("Received leaderboard request...");
   try {
