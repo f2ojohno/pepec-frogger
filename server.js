@@ -8,7 +8,6 @@ app.use(express.static("."));
 app.use(bodyParser.json());
 app.use(cors());
 
-// ✅ FIX: Set correct Content-Security-Policy for Warpcast embedding
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
@@ -20,19 +19,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ FIX: Correct Warpcast Frame JSON response
-app.post("/frame-endpoint", async (req, res) => {
-  console.log("Received Warpcast Frame request...");
+app.post("/frame-endpoint", (req, res) => {
+  console.log("Warpcast Frame request received:", req.body);
   res.json({
-    "image": "https://your-deployed-url.com/silver_robot_frog.png",
-    "post_url": "https://your-deployed-url.com/",
+    "image": "https://pepec.on-fleek.app/silver_robot_frog.png",
     "buttons": [
-      { "text": "Play Now", "action": "post" }
-    ]
+      { "label": "Play Now", "action": "post_redirect" }
+    ],
+    "post_url": "https://pepec.on-fleek.app/"
   });
 });
 
-// ✅ Leaderboard System
 const LEADERBOARD_FILE = "leaderboard.json";
 
 async function loadLeaderboard() {
@@ -48,7 +45,6 @@ async function saveLeaderboard(leaderboard) {
   await fs.writeFile(LEADERBOARD_FILE, JSON.stringify(leaderboard, null, 2));
 }
 
-// ✅ FIX: Ensure leaderboard keeps highest scores only
 function deduplicateLeaderboard(leaderboard) {
   const uniqueEntries = {};
   leaderboard.forEach(entry => {
@@ -59,7 +55,6 @@ function deduplicateLeaderboard(leaderboard) {
   return Object.values(uniqueEntries);
 }
 
-// ✅ Submit Score
 app.post("/submitScore", async (req, res) => {
   const { user, score } = req.body;
   let leaderboard = await loadLeaderboard();
@@ -71,7 +66,6 @@ app.post("/submitScore", async (req, res) => {
   res.json({ success: true });
 });
 
-// ✅ Get Leaderboard
 app.get("/leaderboard", async (req, res) => {
   const leaderboard = await loadLeaderboard();
   res.json(leaderboard.sort((a, b) => b.score - a.score).slice(0, 10));
