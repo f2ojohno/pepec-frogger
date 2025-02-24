@@ -39,28 +39,10 @@
   </div>
   <div id="message" class="message" role="alert"></div>
   <section id="leaderboard" class="leaderboard">
-    <h3>Global Leaderboard</h3>
+    <h3>Local Leaderboard</h3>
     <ul id="leaderboardList" class="leaderboard-list"></ul>
   </section>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
-  <!-- Firebase UMD SDK v10.12.2 -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
-  <script>
-    // Your Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyDwNUdpiN5gwrMsX8WRkSPIBBoI_mQaLiE",
-      authDomain: "pepecleaderboard.firebaseapp.com",
-      databaseURL: "https://pepecleaderboard-default-rtdb.firebaseio.com",
-      projectId: "pepecleaderboard",
-      storageBucket: "pepecleaderboard.firebasestorage.app",
-      messagingSenderId: "495165933365",
-      appId: "1:495165933365:web:531cc480f1c60e33012e7c"
-    };
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    console.log("Firebase initialized with v10.12.2");
-  </script>
   <script src="game.js"></script>
 </body>
 </html>
