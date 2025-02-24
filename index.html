@@ -5,24 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Silver Robot Frog Game - Dodge cars and level up with your $PEPEC wallet!" />
   <title>Silver Robot Frog Game</title>
-  
-  <!-- Open Graph Meta Tags (Required for Warpcast Embed) -->
+
+  <!-- ✅ FIX: Open Graph Meta Tags (Required for Warpcast Embed) -->
   <meta property="og:title" content="Silver Robot Frog Game" />
   <meta property="og:description" content="Dodge cars, collect points, and survive!" />
   <meta property="og:image" content="https://your-deployed-url.com/silver_robot_frog.png" />
   <meta property="og:url" content="https://your-deployed-url.com/" />
 
-  <!-- Warpcast Frame Meta Tags -->
+  <!-- ✅ FIX: Warpcast Frame Meta Tags -->
   <meta name="fc:frame" content="vNext" />
   <meta name="fc:frame:image" content="https://your-deployed-url.com/silver_robot_frog.png" />
   <meta name="fc:frame:button:1" content="Play Now" />
   <meta name="fc:frame:post_url" content="https://your-deployed-url.com/frame-endpoint" />
-  
-  <!-- Optional Second Button (if needed) -->
-  <meta name="fc:frame:button:2" content="Leaderboard" />
-  <meta name="fc:frame:post_url:2" content="https://your-deployed-url.com/leaderboard" />
 
-  <!-- CSP: Allow Embedding on Warpcast -->
+  <!-- ✅ FIX: CSP (Allow Embedding in Warpcast) -->
   <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://warpcast.com https://*.warpcast.com;">
   
   <link rel="stylesheet" href="styles.css" />
@@ -41,19 +37,19 @@
     <canvas id="gameCanvas" width="800" height="600" aria-label="Silver Robot Frog Game Canvas"></canvas>
   </main>
 
-  <!-- Wallet connect UI -->
+  <!-- ✅ Wallet Connect -->
   <div id="login" class="login-container">
     <button id="connectWalletBtn" aria-label="Connect your Web3 wallet">Connect Wallet</button>
   </div>
   <div id="message" class="message" role="alert"></div>
 
-  <!-- Leaderboard -->
+  <!-- ✅ Leaderboard -->
   <section id="leaderboard" class="leaderboard">
     <h3>Global Leaderboard</h3>
     <ul id="leaderboardList" class="leaderboard-list"></ul>
   </section>
 
-  <!-- Libraries and scripts -->
+  <!-- ✅ Libraries & Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
   <script src="game.js"></script>
 </body>
