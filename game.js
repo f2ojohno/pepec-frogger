@@ -118,8 +118,8 @@ const ctx = canvas.getContext("2d");
 
 const frogImg = new Image(); frogImg.src = "silver_robot_frog.png";
 const carImg = new Image(); carImg.src = "car.png";
-const car2Img = new Image(); car2Img.src = "car2.png";
-const car3Img = new Image(); car3Img.src = "car3.png";
+const car2Img = new Image(); carImg.src = "car2.png";
+const car3Img = new Image(); carImg.src = "car3.png";
 const bushImg = new Image(); bushImg.src = "bush.png";
 const carImages = [carImg, car2Img, car3Img];
 
