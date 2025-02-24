@@ -12,8 +12,14 @@ console.log("Configuration loaded.");
 const backgroundMusic = new Audio("background_music.mp3");
 backgroundMusic.loop = true;
 backgroundMusic.volume = 0.5; // Adjust volume (0.0 to 1.0)
-const jumpSound = new Audio("jump_sound.mp3");
-jumpSound.volume = 0.7; // Adjust volume
+
+// Function to play jump sound
+function playJumpSound() {
+  const jumpSound = new Audio("jump_sound.mp3");
+  jumpSound.volume = 0.7;
+  jumpSound.play().catch(err => console.error("Error playing jump sound:", err));
+  console.log("Jump sound triggered");
+}
 
 // ===== WALLET CONNECTION & TOKEN BALANCE CHECK =====
 let provider, signer, userAddress;
@@ -303,12 +309,12 @@ canvas.addEventListener("touchmove", (e) => {
     if (deltaX > 20) {
       frog.x += step;
       if (frog.x > canvas.width - frog.width) frog.x = canvas.width - frog.width;
-      jumpSound.play().catch(err => console.error("Error playing jump sound:", err));
+      playJumpSound();
       lastTouchMove = now;
     } else if (deltaX < -20) {
       frog.x -= step;
       if (frog.x < 0) frog.x = 0;
-      jumpSound.play().catch(err => console.error("Error playing jump sound:", err));
+      playJumpSound();
       lastTouchMove = now;
     }
   } else {
@@ -318,11 +324,11 @@ canvas.addEventListener("touchmove", (e) => {
         score += 10;
         highestY = frog.y;
       }
-      jumpSound.play().catch(err => console.error("Error playing jump sound:", err));
+      playJumpSound();
       lastTouchMove = now;
     } else if (deltaY > 20) {
       frog.y += step;
-      jumpSound.play().catch(err => console.error("Error playing jump sound:", err));
+      playJumpSound();
       lastTouchMove = now;
     }
   }
@@ -347,21 +353,21 @@ document.addEventListener("keydown", (e) => {
         score += 10;
         highestY = frog.y;
       }
-      jumpSound.play().catch(err => console.error("Error playing jump sound:", err));
+      playJumpSound();
       break;
     case "ArrowDown":
       frog.y += step;
-      jumpSound.play().catch(err => console.error("Error playing jump sound:", err));
+      playJumpSound();
       break;
     case "ArrowLeft":
       frog.x -= step;
       if (frog.x < 0) frog.x = 0;
-      jumpSound.play().catch(err => console.error("Error playing jump sound:", err));
+      playJumpSound();
       break;
     case "ArrowRight":
       frog.x += step;
       if (frog.x > canvas.width - frog.width) frog.x = canvas.width - frog.width;
-      jumpSound.play().catch(err => console.error("Error playing jump sound:", err));
+      playJumpSound();
       break;
   }
   if (frog.y <= 50) levelUp();
@@ -381,7 +387,7 @@ function levelUp() {
 function handleGameOver() {
   gameOver = true;
   backgroundMusic.pause();
-  backgroundMusic.currentTime = 0; // Reset to start
+  backgroundMusic.currentTime = 0;
   document.getElementById("message").innerText = `Game Over! Score: ${score}`;
   if (score > highScore) highScore = score;
   submitScore(score);
