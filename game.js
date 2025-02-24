@@ -268,9 +268,9 @@ function gameLoop() {
 }
 
 // Movement Controls
-const step = 15; // Smaller step for smoother movement
+const step = 15; // Consistent step size
 let touchStartX = null, touchStartY = null;
-let lastTouchMove = 0; // Timestamp to debounce touch moves
+let lastTouchMove = 0; // Debounce timer
 
 canvas.addEventListener("touchstart", (e) => {
   e.preventDefault();
@@ -278,15 +278,14 @@ canvas.addEventListener("touchstart", (e) => {
   const touch = e.touches[0];
   touchStartX = touch.clientX;
   touchStartY = touch.clientY;
-  lastTouchMove = 0; // Reset debounce
 });
 
 canvas.addEventListener("touchmove", (e) => {
   e.preventDefault();
   if (gameOver || !touchStartX || !touchStartY) return;
-  
+
   const now = Date.now();
-  if (now - lastTouchMove < 200) return; // Debounce: max 1 move every 200ms
+  if (now - lastTouchMove < 50) return; // Faster debounce: 50ms
 
   const touch = e.touches[0];
   const deltaX = touch.clientX - touchStartX;
@@ -296,9 +295,11 @@ canvas.addEventListener("touchmove", (e) => {
     if (deltaX > 20) {
       frog.x += step;
       if (frog.x > canvas.width - frog.width) frog.x = canvas.width - frog.width;
+      lastTouchMove = now;
     } else if (deltaX < -20) {
       frog.x -= step;
       if (frog.x < 0) frog.x = 0;
+      lastTouchMove = now;
     }
   } else {
     if (deltaY < -20) {
@@ -307,19 +308,20 @@ canvas.addEventListener("touchmove", (e) => {
         score += 10;
         highestY = frog.y;
       }
+      lastTouchMove = now;
     } else if (deltaY > 20) {
       frog.y += step;
+      lastTouchMove = now;
     }
   }
 
   if (frog.y <= 50) levelUp();
   updateUI();
-  lastTouchMove = now;
   touchStartX = touch.clientX;
   touchStartY = touch.clientY;
 });
 
-canvas.addEventListener("touchend", (e) => {
+canvas.addEventListener("touchend", () => {
   touchStartX = null;
   touchStartY = null;
 });
