@@ -43,9 +43,9 @@
     <ul id="leaderboardList" class="leaderboard-list"></ul>
   </section>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
-  <!-- Firebase UMD SDK v11.3.1 -->
-  <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js"></script>
+  <!-- Firebase UMD SDK v10.12.2 -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
   <script>
     // Your Firebase configuration
     const firebaseConfig = {
@@ -59,6 +59,7 @@
     };
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
+    console.log("Firebase initialized with v10.12.2");
   </script>
   <script src="game.js"></script>
 </body>
