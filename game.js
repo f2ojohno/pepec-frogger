@@ -2,7 +2,7 @@
 const REQUIRED_PEPEC_AMOUNT = "0"; // For testing, adjust for production
 const TOKEN_DECIMALS = 18;
 const requiredBalance = ethers.utils.parseUnits(REQUIRED_PEPEC_AMOUNT, TOKEN_DECIMALS);
-const pepecContractAddress = "0x1196c6704789620514fD25632aBe15F69a50bc4f"; // Verify this is correct for Base
+const pepecContractAddress = "0x1196c6704789620514fD25632aBe15F69a50bc4f";
 const pepecABI = ["function balanceOf(address owner) view returns (uint256)"];
 const BASE_CHAIN_ID = 8453; // Base L2 Mainnet chain ID
 
@@ -14,7 +14,6 @@ let provider, signer, userAddress;
 async function connectWallet() {
   console.log("Starting connectWallet function...");
   if (!window.ethereum) {
-    console.log("No Ethereum provider detected.");
     alert("Please install a Web3 wallet like MetaMask to play.");
     document.getElementById("message").innerText = "No Web3 wallet detected.";
     return;
@@ -23,44 +22,33 @@ async function connectWallet() {
   try {
     provider = new ethers.providers.Web3Provider(window.ethereum);
     const accounts = await provider.send("eth_requestAccounts", []);
-    if (!accounts || accounts.length === 0) {
-      throw new Error("No accounts found.");
-    }
+    if (!accounts || accounts.length === 0) throw new Error("No accounts found.");
     signer = provider.getSigner();
     userAddress = await signer.getAddress();
     console.log("Connected address:", userAddress);
 
-    // Check if wallet is on Base network
     const network = await provider.getNetwork();
     console.log("Connected to network:", network.name, "Chain ID:", network.chainId);
     if (network.chainId !== BASE_CHAIN_ID) {
-      // Attempt to switch to Base
       try {
         await window.ethereum.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: `0x${BASE_CHAIN_ID.toString(16)}` }], // Hex chain ID
+          params: [{ chainId: `0x${BASE_CHAIN_ID.toString(16)}` }],
         });
-        console.log("Switched to Base network");
       } catch (switchError) {
-        // If Base isn’t in MetaMask, add it
         if (switchError.code === 4902) {
           await window.ethereum.request({
             method: "wallet_addEthereumChain",
             params: [{
               chainId: `0x${BASE_CHAIN_ID.toString(16)}`,
               chainName: "Base Mainnet",
-              nativeCurrency: {
-                name: "Ether",
-                symbol: "ETH",
-                decimals: 18
-              },
+              nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
               rpcUrls: ["https://mainnet.base.org"],
               blockExplorerUrls: ["https://basescan.org"]
             }]
           });
-          console.log("Added Base network to wallet");
         } else {
-          throw new Error("Please switch to Base network in your wallet.");
+          throw new Error("Please switch to Base network.");
         }
       }
     }
@@ -77,12 +65,9 @@ async function connectWallet() {
 async function checkPepecBalance() {
   try {
     if (!provider || !userAddress) throw new Error("Wallet not connected.");
-
     const network = await provider.getNetwork();
     console.log("Connected to network:", network.name, "Chain ID:", network.chainId);
-    if (network.chainId !== BASE_CHAIN_ID) {
-      throw new Error("Wallet not on Base network (chain ID 8453). Please switch.");
-    }
+    if (network.chainId !== BASE_CHAIN_ID) throw new Error("Wallet not on Base network (chain ID 8453).");
 
     const contract = new ethers.Contract(pepecContractAddress, pepecABI, provider);
     console.log("Checking balance for:", userAddress);
@@ -101,9 +86,8 @@ async function checkPepecBalance() {
   } catch (err) {
     console.error("Error checking balance:", err);
     document.getElementById("message").innerText = `Error checking balance: ${err.reason || err.message || "Contract call failed"}`;
-    // Fallback for testing
     if (err.code === "CALL_EXCEPTION") {
-      console.log("Contract call reverted. Skipping balance check for testing...");
+      console.log("Contract call reverted. Starting game in test mode...");
       document.getElementById("message").innerText = "Balance check failed – Starting game anyway (test mode)";
       await checkImagesLoaded();
       startGame();
@@ -283,32 +267,32 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// Touch Controls for Mobile
-const step = 15;
-let touchStartX, touchStartY;
+// Touch Controls: One lane at a time
+const step = 50; // Match lane spacing (50px)
+let hasMoved = false; // Track if move has occurred in this swipe
 
 canvas.addEventListener("touchstart", (e) => {
   e.preventDefault();
   if (gameOver) return;
-  const touch = e.touches[0];
-  touchStartX = touch.clientX;
-  touchStartY = touch.clientY;
+  hasMoved = false; // Reset for new swipe
 });
 
 canvas.addEventListener("touchmove", (e) => {
   e.preventDefault();
-  if (gameOver || !touchStartX || !touchStartY) return;
+  if (gameOver || hasMoved) return;
   const touch = e.touches[0];
-  const deltaX = touch.clientX - touchStartX;
-  const deltaY = touch.clientY - touchStartY;
+  const deltaX = touch.clientX - (touchStartX || touch.clientX);
+  const deltaY = touch.clientY - (touchStartY || touch.clientY);
 
   if (Math.abs(deltaX) > Math.abs(deltaY)) {
     if (deltaX > 20) {
       frog.x += step;
       if (frog.x > canvas.width - frog.width) frog.x = canvas.width - frog.width;
+      hasMoved = true;
     } else if (deltaX < -20) {
       frog.x -= step;
       if (frog.x < 0) frog.x = 0;
+      hasMoved = true;
     }
   } else {
     if (deltaY < -20) {
@@ -317,8 +301,10 @@ canvas.addEventListener("touchmove", (e) => {
         score += 10;
         highestY = frog.y;
       }
+      hasMoved = true;
     } else if (deltaY > 20) {
       frog.y += step;
+      hasMoved = true;
     }
   }
 
@@ -329,8 +315,7 @@ canvas.addEventListener("touchmove", (e) => {
 });
 
 canvas.addEventListener("touchend", () => {
-  touchStartX = null;
-  touchStartY = null;
+  hasMoved = false;
 });
 
 // Keyboard Controls for Desktop
@@ -387,20 +372,29 @@ function submitScore(finalScore) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ user: userAddress, score: finalScore })
   })
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+      return res.json();
+    })
     .then(data => {
+      console.log("Score submitted:", data);
       document.getElementById("message").innerText += " | Score submitted!";
       loadLeaderboard();
     })
     .catch(err => {
       console.error("Error submitting score:", err);
+      document.getElementById("message").innerText += " | Failed to submit score.";
     });
 }
 
 function loadLeaderboard() {
   fetch("/leaderboard")
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+      return res.json();
+    })
     .then(data => {
+      console.log("Leaderboard data:", data);
       const leaderboardList = document.getElementById("leaderboardList");
       leaderboardList.innerHTML = "";
       data.forEach(entry => {
@@ -409,5 +403,8 @@ function loadLeaderboard() {
         leaderboardList.appendChild(li);
       });
     })
-    .catch(err => console.error("Error loading leaderboard:", err));
+    .catch(err => {
+      console.error("Error loading leaderboard:", err);
+      document.getElementById("message").innerText += " | Failed to load leaderboard.";
+    });
 }
