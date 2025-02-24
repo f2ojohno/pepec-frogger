@@ -9,17 +9,21 @@
   <!-- Open Graph Meta Tags (Required for Warpcast Embed) -->
   <meta property="og:title" content="Silver Robot Frog Game" />
   <meta property="og:description" content="Dodge cars, collect points, and survive!" />
-  <meta property="og:image" content="https://your-deployed-url/silver_robot_frog.png" />
-  <meta property="og:url" content="https://your-deployed-url/" />
-  
+  <meta property="og:image" content="https://your-deployed-url.com/silver_robot_frog.png" />
+  <meta property="og:url" content="https://your-deployed-url.com/" />
+
   <!-- Warpcast Frame Meta Tags -->
   <meta name="fc:frame" content="vNext" />
-  <meta name="fc:frame:image" content="https://your-deployed-url/silver_robot_frog.png" />
+  <meta name="fc:frame:image" content="https://your-deployed-url.com/silver_robot_frog.png" />
   <meta name="fc:frame:button:1" content="Play Now" />
-  <meta name="fc:frame:post_url" content="https://your-deployed-url/" />
+  <meta name="fc:frame:post_url" content="https://your-deployed-url.com/frame-endpoint" />
   
+  <!-- Optional Second Button (if needed) -->
+  <meta name="fc:frame:button:2" content="Leaderboard" />
+  <meta name="fc:frame:post_url:2" content="https://your-deployed-url.com/leaderboard" />
+
   <!-- CSP: Allow Embedding on Warpcast -->
-  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://warpcast.com;">
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://warpcast.com https://*.warpcast.com;">
   
   <link rel="stylesheet" href="styles.css" />
 </head>
