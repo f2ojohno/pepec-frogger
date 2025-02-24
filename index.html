@@ -16,7 +16,8 @@
   <meta name="fc:frame" content="vNext" />
   <meta name="fc:frame:image" content="https://pepec.on-fleek.app/silver_robot_frog.png" />
   <meta name="fc:frame:button:1" content="Play Now" />
-  <meta name="fc:frame:post_url" content="https://pepec.on-fleek.app/frame-endpoint" />
+  <meta name="fc:frame:button:1:action" content="post_redirect" />
+  <meta name="fc:frame:post_url" content="https://pepec.on-fleek.app/" />
 
   <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://warpcast.com https://*.warpcast.com;">
   <link rel="stylesheet" href="styles.css" />
@@ -42,9 +43,9 @@
     <ul id="leaderboardList" class="leaderboard-list"></ul>
   </section>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+  <!-- Firebase UMD SDK v11.3.1 -->
+  <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js"></script>
   <script>
     // Your Firebase configuration
     const firebaseConfig = {
