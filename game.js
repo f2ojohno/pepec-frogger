@@ -70,7 +70,6 @@ async function connectWallet() {
   } catch (err) {
     console.error("Wallet connection error:", err);
     document.getElementById("message").innerText = `Error: ${err.message || "Unknown error"}`;
-    throw err;
   }
 }
 
@@ -104,8 +103,6 @@ async function checkPepecBalance() {
       await checkImagesLoaded();
       startGame();
       loadLeaderboard();
-    } else {
-      throw err;
     }
   }
 }
@@ -118,8 +115,8 @@ const ctx = canvas.getContext("2d");
 
 const frogImg = new Image(); frogImg.src = "silver_robot_frog.png";
 const carImg = new Image(); carImg.src = "car.png";
-const car2Img = new Image(); carImg.src = "car2.png";
-const car3Img = new Image(); carImg.src = "car3.png";
+const car2Img = new Image(); car2Img.src = "car2.png";
+const car3Img = new Image(); car3Img.src = "car3.png";
 const bushImg = new Image(); bushImg.src = "bush.png";
 const carImages = [carImg, car2Img, car3Img];
 
@@ -396,80 +393,37 @@ function handleGameOver() {
   }, 100);
 }
 
-// Firebase Leaderboard Functions
-function waitForFirebase(callback) {
-  if (typeof firebase !== "undefined" && firebase.database) {
-    console.log("Firebase is ready");
-    callback();
-  } else {
-    console.log("Waiting for Firebase to load...");
-    setTimeout(() => waitForFirebase(callback), 100);
-  }
-}
-
+// Local Storage Leaderboard Functions
 function submitScore(finalScore) {
-  waitForFirebase(() => {
-    const db = firebase.database();
-    const leaderboardRef = db.ref("leaderboard");
-    console.log("Firebase DB initialized for submitScore");
-    console.log("Submitting score:", finalScore, "for user:", userAddress);
-    const entry = { user: userAddress || "Anonymous", score: finalScore, timestamp: Date.now() };
-
-    leaderboardRef.push(entry)
-      .then(() => {
-        console.log("Score submitted to Firebase successfully");
-        document.getElementById("message").innerText += " | Score submitted!";
-        loadLeaderboard();
-      })
-      .catch(err => {
-        console.error("Error submitting score to Firebase:", err);
-        document.getElementById("message").innerText += " | Failed to submit score: " + err.message;
-      });
+  let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+  leaderboard.push({ user: userAddress || "Anonymous", score: finalScore });
+  
+  const uniqueEntries = {};
+  leaderboard.forEach(entry => {
+    if (!uniqueEntries[entry.user.toLowerCase()] || entry.score > uniqueEntries[entry.user.toLowerCase()].score) {
+      uniqueEntries[entry.user.toLowerCase()] = { user: entry.user, score: entry.score };
+    }
   });
+  leaderboard = Object.values(uniqueEntries);
+  leaderboard.sort((a, b) => b.score - a.score);
+  leaderboard = leaderboard.slice(0, 10);
+
+  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+  document.getElementById("message").innerText += " | Score submitted!";
+  loadLeaderboard();
 }
 
 function loadLeaderboard() {
-  waitForFirebase(() => {
-    const db = firebase.database();
-    const leaderboardRef = db.ref("leaderboard");
-    console.log("Firebase DB initialized for loadLeaderboard");
-    console.log("Fetching leaderboard data...");
-    leaderboardRef.orderByChild("score").limitToLast(10).once("value")
-      .then(snapshot => {
-        console.log("Leaderboard snapshot received");
-        const data = snapshot.val();
-        if (!data) {
-          console.log("No leaderboard data available");
-          document.getElementById("leaderboardList").innerHTML = "<li>No scores yet!</li>";
-          return;
-        }
-
-        let leaderboard = [];
-        for (let key in data) {
-          leaderboard.push(data[key]);
-        }
-        leaderboard.sort((a, b) => b.score - a.score);
-        leaderboard = leaderboard.slice(0, 10);
-
-        console.log("Processed leaderboard data:", leaderboard);
-        const leaderboardList = document.getElementById("leaderboardList");
-        leaderboardList.innerHTML = ""; // Clear existing content
-        if (leaderboard.length === 0) {
-          console.log("Leaderboard is empty after processing");
-          leaderboardList.innerHTML = "<li>No scores yet!</li>";
-        } else {
-          leaderboard.forEach(entry => {
-            let li = document.createElement("li");
-            li.textContent = `${entry.user.substring(0, 6)}...${entry.user.substring(entry.user.length - 4)} : ${entry.score}`;
-            leaderboardList.appendChild(li);
-            console.log("Added leaderboard entry:", li.textContent);
-          });
-        }
-      })
-      .catch(err => {
-        console.error("Error loading leaderboard from Firebase:", err);
-        document.getElementById("message").innerText += " | Failed to load leaderboard: " + err.message;
-        document.getElementById("leaderboardList").innerHTML = "<li>Error loading scores</li>";
-      });
-  });
+  let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+  const leaderboardList = document.getElementById("leaderboardList");
+  leaderboardList.innerHTML = "";
+  if (leaderboard.length === 0) {
+    leaderboardList.innerHTML = "<li>No scores yet!</li>";
+  } else {
+    leaderboard.forEach(entry => {
+      let li = document.createElement("li");
+      li.textContent = `${entry.user.substring(0, 6)}...${entry.user.substring(entry.user.length - 4)} : ${entry.score}`;
+      leaderboardList.appendChild(li);
+    });
+  }
 }
