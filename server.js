@@ -1,131 +1,80 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const fs = require("fs").promises; // Use promises for async file operations
+const fs = require("fs").promises;
 const cors = require("cors");
-const app = express();
 
+const app = express();
 app.use(express.static("."));
 app.use(bodyParser.json());
-app.use(cors()); // Enable CORS for frontend requests
+app.use(cors());
 
-// Set Content Security Policy to allow embedding on Warpcast
+// ✅ FIX: Set correct Content-Security-Policy for Warpcast embedding
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
-    "default-src 'self'; frame-ancestors 'self' https://warpcast.com https://*.warpcast.com; script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self';"
+    "frame-ancestors 'self' https://warpcast.com https://*.warpcast.com; default-src 'self'; script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self';"
   );
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   next();
 });
 
-const LEADERBOARD_FILE = "leaderboard.json";
-
-// Load leaderboard from file or initialize empty
-async function loadLeaderboard() {
-  try {
-    const data = await fs.readFile(LEADERBOARD_FILE, "utf8");
-    return JSON.parse(data);
-  } catch (err) {
-    console.log("No leaderboard file found, initializing empty leaderboard.");
-    return []; // Return empty array if file doesn’t exist or there’s an error
-  }
-}
-
-// Save leaderboard to file
-async function saveLeaderboard(leaderboard) {
-  try {
-    await fs.writeFile(LEADERBOARD_FILE, JSON.stringify(leaderboard, null, 2));
-  } catch (err) {
-    console.error("Error saving leaderboard:", err);
-    throw err;
-  }
-}
-
-// Deduplicate and keep highest score per wallet
-function deduplicateLeaderboard(leaderboard) {
-  const uniqueEntries = {};
-  leaderboard.forEach(entry => {
-    const lowerCaseUser = entry.user.toLowerCase();
-    if (!uniqueEntries[lowerCaseUser] || entry.score > uniqueEntries[lowerCaseUser].score) {
-      uniqueEntries[lowerCaseUser] = { user: entry.user, score: entry.score };
-    }
-  });
-  return Object.values(uniqueEntries);
-}
-
-// Warpcast Frame Endpoint
+// ✅ FIX: Correct Warpcast Frame JSON response
 app.post("/frame-endpoint", async (req, res) => {
   console.log("Received Warpcast Frame request...");
   res.json({
     "image": "https://your-deployed-url.com/silver_robot_frog.png",
     "post_url": "https://your-deployed-url.com/",
     "buttons": [
-      { "text": "Play Now", "action": "post" },
-      { "text": "Leaderboard", "action": "post", "post_url": "/leaderboard" }
+      { "text": "Play Now", "action": "post" }
     ]
   });
 });
 
-// Submit Score
-app.post("/submitScore", async (req, res) => {
-  console.log("Received score submission request...");
-  const { user, score } = req.body;
+// ✅ Leaderboard System
+const LEADERBOARD_FILE = "leaderboard.json";
 
+async function loadLeaderboard() {
   try {
-    let leaderboard = await loadLeaderboard();
+    const data = await fs.readFile(LEADERBOARD_FILE, "utf8");
+    return JSON.parse(data);
+  } catch {
+    return [];
+  }
+}
 
-    // Find existing entry for this wallet (case-insensitive)
-    const existingEntry = leaderboard.find(entry => entry.user.toLowerCase() === user.toLowerCase());
+async function saveLeaderboard(leaderboard) {
+  await fs.writeFile(LEADERBOARD_FILE, JSON.stringify(leaderboard, null, 2));
+}
 
-    if (existingEntry) {
-      // Update score if the new one is higher
-      if (score > existingEntry.score) {
-        existingEntry.score = score;
-        console.log(`Updated score for ${user} to ${score} (was ${existingEntry.score})`);
-      } else {
-        console.log(`Score ${score} for ${user} not higher than existing ${existingEntry.score}, skipping update`);
-      }
-    } else {
-      // Add new entry if wallet doesn’t exist
-      leaderboard.push({ user, score });
-      console.log(`New score submitted: ${user} => ${score}`);
+// ✅ FIX: Ensure leaderboard keeps highest scores only
+function deduplicateLeaderboard(leaderboard) {
+  const uniqueEntries = {};
+  leaderboard.forEach(entry => {
+    if (!uniqueEntries[entry.user.toLowerCase()] || entry.score > uniqueEntries[entry.user.toLowerCase()].score) {
+      uniqueEntries[entry.user.toLowerCase()] = { user: entry.user, score: entry.score };
     }
+  });
+  return Object.values(uniqueEntries);
+}
 
-    // Deduplicate and keep highest score per wallet
-    leaderboard = deduplicateLeaderboard(leaderboard);
-
-    // Sort descending by score and limit to top 10
-    leaderboard.sort((a, b) => b.score - a.score);
-    leaderboard = leaderboard.slice(0, 10); // Keep only top 10 scores
-
-    await saveLeaderboard(leaderboard);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("Error submitting score:", err);
-    res.status(500).json({ success: false, error: "Server error saving score" });
-  }
+// ✅ Submit Score
+app.post("/submitScore", async (req, res) => {
+  const { user, score } = req.body;
+  let leaderboard = await loadLeaderboard();
+  leaderboard.push({ user, score });
+  leaderboard = deduplicateLeaderboard(leaderboard);
+  leaderboard.sort((a, b) => b.score - a.score);
+  leaderboard = leaderboard.slice(0, 10);
+  await saveLeaderboard(leaderboard);
+  res.json({ success: true });
 });
 
-// Get Leaderboard
+// ✅ Get Leaderboard
 app.get("/leaderboard", async (req, res) => {
-  console.log("Received leaderboard request...");
-  try {
-    const leaderboard = await loadLeaderboard();
-    // Deduplicate and keep highest score per wallet
-    const deduplicated = deduplicateLeaderboard(leaderboard);
-    // Sort descending by score and limit to top 10
-    const sorted = deduplicated.sort((a, b) => b.score - a.score).slice(0, 10);
-    res.json(sorted); // Return top 10 scores with highest per wallet
-  } catch (err) {
-    console.error("Error loading leaderboard:", err);
-    res.status(500).json({ success: false, error: "Server error loading leaderboard" });
-  }
+  const leaderboard = await loadLeaderboard();
+  res.json(leaderboard.sort((a, b) => b.score - a.score).slice(0, 10));
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ success: false, error: "Internal server error" });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(3000, () => console.log("Server running on port 3000"));
