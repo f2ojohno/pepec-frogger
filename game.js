@@ -20,109 +20,73 @@ async function connectWallet() {
   }
 
   try {
-    console.log("Attempting to connect wallet...");
     provider = new ethers.providers.Web3Provider(window.ethereum);
-    console.log("Provider initialized:", provider);
-
-    console.log("Requesting accounts...");
     const accounts = await provider.send("eth_requestAccounts", []);
-    console.log("Accounts received:", accounts);
-
     if (!accounts || accounts.length === 0) {
-      throw new Error("No accounts found. Please unlock your wallet.");
+      throw new Error("No accounts found.");
     }
-
-    console.log("Getting signer...");
     signer = provider.getSigner();
-    console.log("Getting user address...");
     userAddress = await signer.getAddress();
     console.log("Connected address:", userAddress);
-
     document.getElementById("message").innerText = `Wallet connected: ${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
     await checkPepecBalance();
   } catch (err) {
     console.error("Wallet connection error:", err);
-    document.getElementById("message").innerText = `Error connecting wallet: ${err.message || "Unknown error"}`;
-    throw err; // Re-throw for higher-level handling
+    document.getElementById("message").innerText = `Error: ${err.message || "Unknown error"}`;
+    throw err;
   }
 }
 
 async function checkPepecBalance() {
-  console.log("Starting checkPepecBalance function...");
   try {
-    if (!provider || !userAddress) {
-      throw new Error("Wallet not connected.");
-    }
-
-    console.log("Initializing contract...");
+    if (!provider || !userAddress) throw new Error("Wallet not connected.");
     const contract = new ethers.Contract(pepecContractAddress, pepecABI, provider);
-    console.log("Contract initialized:", contract);
     const balance = await contract.balanceOf(userAddress);
-    console.log("Balance fetched:", balance.toString());
     const formattedBalance = ethers.utils.formatUnits(balance, TOKEN_DECIMALS);
-
     if (balance.lt(requiredBalance)) {
-      document.getElementById("message").innerText = `Insufficient $PEPEC balance (${formattedBalance} < ${REQUIRED_PEPEC_AMOUNT})`;
-      return;
+      document.getElementById("message").innerText = `Insufficient $PEPEC (${formattedBalance} < ${REQUIRED_PEPEC_AMOUNT})`;
     } else {
       document.getElementById("message").innerText = `Balance verified (${formattedBalance} $PEPEC) – Starting game!`;
+      await checkImagesLoaded();
       startGame();
-      // Load leaderboard immediately after wallet connection
-      console.log("Loading leaderboard on wallet connect...");
       loadLeaderboard();
     }
   } catch (err) {
-    console.error("Error checking $PEPEC balance:", err);
-    document.getElementById("message").innerText = `Error checking balance: ${err.message || "Unknown error"}`;
+    console.error("Error checking balance:", err);
+    document.getElementById("message").innerText = `Error: ${err.message}`;
     throw err;
   }
 }
 
 document.getElementById("connectWalletBtn").addEventListener("click", connectWallet);
-console.log("Wallet button listener attached.");
 
 // ===== GAME SETUP =====
-console.log("Starting game setup...");
 const canvas = document.getElementById("gameCanvas");
-console.log("Canvas element:", canvas);
 const ctx = canvas.getContext("2d");
-console.log("Canvas context:", ctx);
 
-const frogImg = new Image();
-frogImg.src = "silver_robot_frog.png";
-frogImg.onload = () => console.log("Frog image loaded");
-frogImg.onerror = () => console.error("Failed to load frog image");
-
-const carImg = new Image();
-carImg.src = "car.png";
-carImg.onload = () => console.log("Car image loaded");
-carImg.onerror = () => console.error("Failed to load car image");
-
-const car2Img = new Image();
-car2Img.src = "car2.png";
-car2Img.onload = () => console.log("Car2 image loaded");
-car2Img.onerror = () => console.error("Failed to load car2 image");
-
-const car3Img = new Image();
-car3Img.src = "car3.png";
-car3Img.onload = () => console.log("Car3 image loaded");
-car3Img.onerror = () => console.error("Failed to load car3 image");
-
-const bushImg = new Image();
-bushImg.src = "bush.png";
-bushImg.onload = () => console.log("Bush image loaded");
-bushImg.onerror = () => console.error("Failed to load bush image");
-
+const frogImg = new Image(); frogImg.src = "silver_robot_frog.png";
+const carImg = new Image(); carImg.src = "car.png";
+const car2Img = new Image(); car2Img.src = "car2.png";
+const car3Img = new Image(); car3Img.src = "car3.png";
+const bushImg = new Image(); bushImg.src = "bush.png";
 const carImages = [carImg, car2Img, car3Img];
 
+async function checkImagesLoaded() {
+  const images = [frogImg, carImg, car2Img, car3Img, bushImg];
+  await Promise.all(images.map(img => 
+    new Promise((resolve, reject) => {
+      if (img.complete && img.naturalWidth) resolve();
+      else { img.onload = resolve; img.onerror = reject; }
+    })
+  ));
+}
+
 // ===== GAME VARIABLES =====
-console.log("Initializing game variables...");
 let frog, obstacles, score, level, gameOver, highestY;
 let highScore = 0;
 let bushes = [];
 
 function drawBackground() {
-  console.log("Drawing background...");
   const gradient = ctx.createLinearGradient(0, 0, 0, 100);
   gradient.addColorStop(0, "#87CEEB");
   gradient.addColorStop(1, "#B0E0E6");
@@ -131,7 +95,6 @@ function drawBackground() {
 }
 
 function generateBushes() {
-  console.log("Generating bushes...");
   bushes.length = 0;
   for (let i = 0; i < 8; i++) {
     bushes.push({
@@ -144,7 +107,6 @@ function generateBushes() {
 }
 
 function drawGrassAndBushes() {
-  console.log("Drawing grass and bushes...");
   const grassGradient = ctx.createLinearGradient(0, 0, 0, 600);
   grassGradient.addColorStop(0, "#4CAF50");
   grassGradient.addColorStop(1, "#388E3C");
@@ -161,21 +123,15 @@ function drawGrassAndBushes() {
 }
 
 function drawRoad() {
-  console.log("Drawing road...");
-  // Sidewalks (gray borders)
-  ctx.fillStyle = "#808080"; // Gray for sidewalks
-  ctx.fillRect(0, 100, canvas.width, 20); // Top sidewalk
-  ctx.fillRect(0, 480, canvas.width, 20); // Bottom sidewalk
-
-  // Road (gray)
+  ctx.fillStyle = "#808080";
+  ctx.fillRect(0, 100, canvas.width, 20);
+  ctx.fillRect(0, 480, canvas.width, 20);
   ctx.fillStyle = "#616161";
-  ctx.fillRect(0, 120, canvas.width, 360); // Full road height (120 to 480)
-  
-  // Lane markings
+  ctx.fillRect(0, 120, canvas.width, 360);
   ctx.strokeStyle = "#FFD700";
   ctx.lineWidth = 3;
   ctx.setLineDash([20, 15]);
-  for (let laneY = 170; laneY < 470; laneY += 50) { // Vertical lanes, same as before
+  for (let laneY = 170; laneY < 470; laneY += 50) {
     ctx.beginPath();
     ctx.moveTo(0, laneY);
     ctx.lineTo(canvas.width, laneY);
@@ -185,7 +141,6 @@ function drawRoad() {
 }
 
 function resetGame() {
-  console.log("Resetting game...");
   frog = { x: 375, y: 550, width: 50, height: 50 };
   score = 0;
   level = 1;
@@ -197,22 +152,12 @@ function resetGame() {
 }
 
 function initObstacles() {
-  console.log("Initializing obstacles...");
   obstacles = [];
-  const baseCars = 2;
-  const carsPerLevel = 2;
-  const numCars = baseCars + (level - 1) * carsPerLevel;
-  const baseSpeed = 2.5;
-  const speedIncrement = 0.5;
-  const minSpeed = baseSpeed + (level - 1) * speedIncrement;
-
+  const numCars = 2 + (level - 1) * 2;
+  const minSpeed = 2.5 + (level - 1) * 0.5;
   for (let i = 0; i < numCars; i++) {
-    let laneIndex = i % 8;
-    let laneY = 120 + laneIndex * 50; // Ensure cars start exactly in lanes (120 to 470)
-    let speed = (Math.random() * 1 + minSpeed) * (Math.random() > 0.5 ? 1 : -1); // Base speed + random variation
-    let randomBoost = Math.random() * 0.5; // Add random speed boost (0 to 0.5)
-    speed += randomBoost * (Math.random() > 0.5 ? 1 : -1); // Apply boost in random direction
-
+    let laneY = 120 + (i % 8) * 50;
+    let speed = (Math.random() * 1 + minSpeed) * (Math.random() > 0.5 ? 1 : -1);
     obstacles.push({
       x: speed > 0 ? -60 : canvas.width,
       y: laneY,
@@ -225,7 +170,6 @@ function initObstacles() {
 }
 
 function drawCar(obstacle) {
-  console.log("Drawing car at x:", obstacle.x, "y:", obstacle.y);
   ctx.save();
   if (obstacle.speed < 0) {
     ctx.scale(-1, 1);
@@ -237,53 +181,33 @@ function drawCar(obstacle) {
 }
 
 function updateUI() {
-  console.log("Updating UI...");
   document.getElementById("score").innerText = `Score: ${score}`;
   document.getElementById("highScore").innerText = `High Score: ${highScore}`;
   document.getElementById("level").innerText = `Level: ${level}`;
 }
 
 async function startGame() {
-  console.log("Starting game...");
-  try {
-    document.getElementById("login").style.opacity = "0"; // Fade out login
-    setTimeout(() => {
-      document.getElementById("login").style.display = "none";
-      document.getElementById("login").style.opacity = "1"; // Reset for next use
-    }, 300); // Match CSS transition duration
-    resetGame();
-    requestAnimationFrame(gameLoop);
-  } catch (err) {
-    console.error("Error starting game:", err);
-    document.getElementById("message").innerText = "Failed to start game. Please refresh.";
-  }
+  document.getElementById("login").style.opacity = "0";
+  setTimeout(() => {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("login").style.opacity = "1";
+  }, 300);
+  resetGame();
+  requestAnimationFrame(gameLoop);
 }
 
 function gameLoop() {
-  console.log("Game loop running...");
-  if (gameOver) {
-    console.log("Game over, stopping loop...");
-    return;
-  }
-  
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas each frame
+  if (gameOver) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBackground();
   drawGrassAndBushes();
   drawRoad();
-  
+
   obstacles.forEach(obstacle => {
-    let laneIndex = Math.floor((obstacle.y - 120) / 50);
-    obstacle.y = 120 + laneIndex * 50; // Snap to exact lane position
-    if (obstacle.y < 120) obstacle.y = 120; // Prevent going above top of road
-    if (obstacle.y > 470) obstacle.y = 470; // Prevent going below bottom of road
-
     obstacle.x += obstacle.speed;
-
-    if (obstacle.speed > 0 && obstacle.x > canvas.width) obstacle.x = -obstacle.width; // Right-moving wrap to left
-    if (obstacle.speed < 0 && obstacle.x + obstacle.width < 0) obstacle.x = canvas.width; // Left-moving wrap to right
-    
+    if (obstacle.speed > 0 && obstacle.x > canvas.width) obstacle.x = -obstacle.width;
+    if (obstacle.speed < 0 && obstacle.x + obstacle.width < 0) obstacle.x = canvas.width;
     drawCar(obstacle);
-
     if (
       frog.x < obstacle.x + obstacle.width &&
       frog.x + frog.width > obstacle.x &&
@@ -300,19 +224,62 @@ function gameLoop() {
   ctx.shadowBlur = 0;
 
   updateUI();
-
   requestAnimationFrame(gameLoop);
 }
 
-document.addEventListener("keydown", function(e) {
-  console.log("Key pressed:", e.key);
-  if (gameOver) {
-    console.log("Game over, ignoring keypress...");
-    return;
+// Touch Controls for Mobile
+const step = 15;
+let touchStartX, touchStartY;
+
+canvas.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  if (gameOver) return;
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+});
+
+canvas.addEventListener("touchmove", (e) => {
+  e.preventDefault();
+  if (gameOver || !touchStartX || !touchStartY) return;
+  const touch = e.touches[0];
+  const deltaX = touch.clientX - touchStartX;
+  const deltaY = touch.clientY - touchStartY;
+
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (deltaX > 20) {
+      frog.x += step;
+      if (frog.x > canvas.width - frog.width) frog.x = canvas.width - frog.width;
+    } else if (deltaX < -20) {
+      frog.x -= step;
+      if (frog.x < 0) frog.x = 0;
+    }
+  } else {
+    if (deltaY < -20) {
+      frog.y -= step;
+      if (frog.y < highestY) {
+        score += 10;
+        highestY = frog.y;
+      }
+    } else if (deltaY > 20) {
+      frog.y += step;
+    }
   }
 
-  const step = 15; // Kept slower frog movement for difficulty
+  if (frog.y <= 50) levelUp();
+  updateUI();
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+});
 
+canvas.addEventListener("touchend", () => {
+  touchStartX = null;
+  touchStartY = null;
+});
+
+// Keyboard Controls for Desktop
+document.addEventListener("keydown", (e) => {
+  if (gameOver) return;
   switch (e.key) {
     case "ArrowUp":
       frog.y -= step;
@@ -320,38 +287,24 @@ document.addEventListener("keydown", function(e) {
         score += 10;
         highestY = frog.y;
       }
-      if (frog.x < 0) frog.x = 0;
-      if (frog.x > canvas.width - frog.width) frog.x = canvas.width - frog.width;
-      console.log("Frog moved up to x:", frog.x, "y:", frog.y);
       break;
     case "ArrowDown":
       frog.y += step;
-      if (frog.x < 0) frog.x = 0;
-      if (frog.x > canvas.width - frog.width) frog.x = canvas.width - frog.width;
-      console.log("Frog moved down to x:", frog.x, "y:", frog.y);
       break;
     case "ArrowLeft":
       frog.x -= step;
       if (frog.x < 0) frog.x = 0;
-      console.log("Frog moved left to x:", frog.x, "y:", frog.y);
       break;
     case "ArrowRight":
       frog.x += step;
       if (frog.x > canvas.width - frog.width) frog.x = canvas.width - frog.width;
-      console.log("Frog moved right to x:", frog.x, "y:", frog.y);
       break;
   }
-
-  if (frog.y <= 50) {
-    console.log("Leveling up...");
-    levelUp();
-  }
-
+  if (frog.y <= 50) levelUp();
   updateUI();
 });
 
 function levelUp() {
-  console.log("Leveling up to level:", level + 1);
   level++;
   score += 100;
   document.getElementById("message").innerText = `Level ${level}!`;
@@ -362,53 +315,36 @@ function levelUp() {
 }
 
 function handleGameOver() {
-  console.log("Game over triggered, score:", score);
   gameOver = true;
   document.getElementById("message").innerText = `Game Over! Score: ${score}`;
-
-  if (score > highScore) {
-    highScore = score;
-    updateUI();
-  }
-
+  if (score > highScore) highScore = score;
   submitScore(score);
   setTimeout(() => {
     document.getElementById("message").innerText += " | Restarting in 2 seconds...";
     setTimeout(startGame, 2000);
-  }, 100); // Slight delay for readability
+  }, 100);
 }
 
 function submitScore(finalScore) {
-  console.log("Submitting score:", finalScore);
   fetch("/submitScore", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ user: userAddress, score: finalScore })
   })
-    .then(response => {
-      if (!response.ok) throw new Error("Network response was not ok: " + response.statusText);
-      return response.json();
-    })
+    .then(res => res.json())
     .then(data => {
-      console.log("Score submitted successfully:", data);
       document.getElementById("message").innerText += " | Score submitted!";
       loadLeaderboard();
     })
     .catch(err => {
       console.error("Error submitting score:", err);
-      document.getElementById("message").innerText += " | Failed to submit score. Try again.";
     });
 }
 
 function loadLeaderboard() {
-  console.log("Loading leaderboard...");
   fetch("/leaderboard")
-    .then(response => {
-      if (!response.ok) throw new Error("Network response was not ok: " + response.statusText);
-      return response.json();
-    })
+    .then(res => res.json())
     .then(data => {
-      console.log("Leaderboard data received:", data);
       const leaderboardList = document.getElementById("leaderboardList");
       leaderboardList.innerHTML = "";
       data.forEach(entry => {
@@ -417,8 +353,5 @@ function loadLeaderboard() {
         leaderboardList.appendChild(li);
       });
     })
-    .catch(err => {
-      console.error("Error loading leaderboard:", err);
-      document.getElementById("message").innerText += " | Failed to load leaderboard.";
-    });
+    .catch(err => console.error("Error loading leaderboard:", err));
 }
