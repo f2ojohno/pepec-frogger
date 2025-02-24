@@ -8,9 +8,8 @@ app.use(express.static("."));
 app.use(bodyParser.json());
 app.use(cors());
 
-// Middleware for headers and logging
 app.use((req, res, next) => {
-  console.log(`Request received: ${req.method} ${req.path}`);
+  console.log(`Request: ${req.method} ${req.path}`);
   res.setHeader(
     "Content-Security-Policy",
     "frame-ancestors 'self' https://warpcast.com https://*.warpcast.com; default-src 'self'; script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self';"
@@ -21,34 +20,39 @@ app.use((req, res, next) => {
   next();
 });
 
-// Warpcast Frame endpoint
+// Frame endpoint
 app.post("/frame-endpoint", (req, res) => {
-  console.log("Warpcast Frame request received:", JSON.stringify(req.body, null, 2));
+  console.log("Warpcast Frame request:", JSON.stringify(req.body, null, 2));
   const frameResponse = {
     image: "https://pepec.on-fleek.app/silver_robot_frog.png",
-    buttons: [
-      { label: "Play Now", action: "post_redirect" }
-    ],
+    buttons: [{ label: "Play Now", action: "post_redirect" }],
     post_url: "https://pepec.on-fleek.app/"
   };
   res.setHeader("Content-Type", "application/json");
   res.status(200).json(frameResponse);
-  console.log("Frame response sent:", JSON.stringify(frameResponse, null, 2));
+  console.log("Frame response:", JSON.stringify(frameResponse, null, 2));
 });
 
+// Leaderboard endpoints
 const LEADERBOARD_FILE = "leaderboard.json";
 
 async function loadLeaderboard() {
   try {
     const data = await fs.readFile(LEADERBOARD_FILE, "utf8");
     return JSON.parse(data);
-  } catch {
+  } catch (err) {
+    console.error("Error loading leaderboard:", err);
     return [];
   }
 }
 
 async function saveLeaderboard(leaderboard) {
-  await fs.writeFile(LEADERBOARD_FILE, JSON.stringify(leaderboard, null, 2));
+  try {
+    await fs.writeFile(LEADERBOARD_FILE, JSON.stringify(leaderboard, null, 2));
+    console.log("Leaderboard saved:", leaderboard);
+  } catch (err) {
+    console.error("Error saving leaderboard:", err);
+  }
 }
 
 function deduplicateLeaderboard(leaderboard) {
@@ -62,7 +66,12 @@ function deduplicateLeaderboard(leaderboard) {
 }
 
 app.post("/submitScore", async (req, res) => {
+  console.log("Submit score request:", req.body);
   const { user, score } = req.body;
+  if (!user || typeof score !== "number") {
+    console.error("Invalid score data:", req.body);
+    return res.status(400).json({ success: false, error: "Invalid data" });
+  }
   let leaderboard = await loadLeaderboard();
   leaderboard.push({ user, score });
   leaderboard = deduplicateLeaderboard(leaderboard);
@@ -73,6 +82,7 @@ app.post("/submitScore", async (req, res) => {
 });
 
 app.get("/leaderboard", async (req, res) => {
+  console.log("Leaderboard request received");
   const leaderboard = await loadLeaderboard();
   res.status(200).json(leaderboard.sort((a, b) => b.score - a.score).slice(0, 10));
 });
