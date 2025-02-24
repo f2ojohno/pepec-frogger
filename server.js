@@ -8,7 +8,9 @@ app.use(express.static("."));
 app.use(bodyParser.json());
 app.use(cors());
 
+// Middleware for headers and logging
 app.use((req, res, next) => {
+  console.log(`Request received: ${req.method} ${req.path}`);
   res.setHeader(
     "Content-Security-Policy",
     "frame-ancestors 'self' https://warpcast.com https://*.warpcast.com; default-src 'self'; script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self';"
@@ -19,15 +21,19 @@ app.use((req, res, next) => {
   next();
 });
 
+// Warpcast Frame endpoint
 app.post("/frame-endpoint", (req, res) => {
-  console.log("Warpcast Frame request received:", req.body);
-  res.json({
-    "image": "https://pepec.on-fleek.app/silver_robot_frog.png",
-    "buttons": [
-      { "label": "Play Now", "action": "post_redirect" }
+  console.log("Warpcast Frame request received:", JSON.stringify(req.body, null, 2));
+  const frameResponse = {
+    image: "https://pepec.on-fleek.app/silver_robot_frog.png",
+    buttons: [
+      { label: "Play Now", action: "post_redirect" }
     ],
-    "post_url": "https://pepec.on-fleek.app/"
-  });
+    post_url: "https://pepec.on-fleek.app/"
+  };
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).json(frameResponse);
+  console.log("Frame response sent:", JSON.stringify(frameResponse, null, 2));
 });
 
 const LEADERBOARD_FILE = "leaderboard.json";
@@ -63,12 +69,12 @@ app.post("/submitScore", async (req, res) => {
   leaderboard.sort((a, b) => b.score - a.score);
   leaderboard = leaderboard.slice(0, 10);
   await saveLeaderboard(leaderboard);
-  res.json({ success: true });
+  res.status(200).json({ success: true });
 });
 
 app.get("/leaderboard", async (req, res) => {
   const leaderboard = await loadLeaderboard();
-  res.json(leaderboard.sort((a, b) => b.score - a.score).slice(0, 10));
+  res.status(200).json(leaderboard.sort((a, b) => b.score - a.score).slice(0, 10));
 });
 
 app.listen(3000, () => console.log("Server running on port 3000"));
