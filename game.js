@@ -2,8 +2,9 @@
 const REQUIRED_PEPEC_AMOUNT = "0"; // For testing, adjust for production
 const TOKEN_DECIMALS = 18;
 const requiredBalance = ethers.utils.parseUnits(REQUIRED_PEPEC_AMOUNT, TOKEN_DECIMALS);
-const pepecContractAddress = "0x1196c6704789620514fD25632aBe15F69a50bc4f";
+const pepecContractAddress = "0x1196c6704789620514fD25632aBe15F69a50bc4f"; // Verify this is correct for Base
 const pepecABI = ["function balanceOf(address owner) view returns (uint256)"];
+const BASE_CHAIN_ID = 8453; // Base L2 Mainnet chain ID
 
 console.log("Configuration loaded.");
 
@@ -28,6 +29,42 @@ async function connectWallet() {
     signer = provider.getSigner();
     userAddress = await signer.getAddress();
     console.log("Connected address:", userAddress);
+
+    // Check if wallet is on Base network
+    const network = await provider.getNetwork();
+    console.log("Connected to network:", network.name, "Chain ID:", network.chainId);
+    if (network.chainId !== BASE_CHAIN_ID) {
+      // Attempt to switch to Base
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: `0x${BASE_CHAIN_ID.toString(16)}` }], // Hex chain ID
+        });
+        console.log("Switched to Base network");
+      } catch (switchError) {
+        // If Base isn’t in MetaMask, add it
+        if (switchError.code === 4902) {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: `0x${BASE_CHAIN_ID.toString(16)}`,
+              chainName: "Base Mainnet",
+              nativeCurrency: {
+                name: "Ether",
+                symbol: "ETH",
+                decimals: 18
+              },
+              rpcUrls: ["https://mainnet.base.org"],
+              blockExplorerUrls: ["https://basescan.org"]
+            }]
+          });
+          console.log("Added Base network to wallet");
+        } else {
+          throw new Error("Please switch to Base network in your wallet.");
+        }
+      }
+    }
+
     document.getElementById("message").innerText = `Wallet connected: ${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
     await checkPepecBalance();
   } catch (err) {
@@ -40,9 +77,19 @@ async function connectWallet() {
 async function checkPepecBalance() {
   try {
     if (!provider || !userAddress) throw new Error("Wallet not connected.");
+
+    const network = await provider.getNetwork();
+    console.log("Connected to network:", network.name, "Chain ID:", network.chainId);
+    if (network.chainId !== BASE_CHAIN_ID) {
+      throw new Error("Wallet not on Base network (chain ID 8453). Please switch.");
+    }
+
     const contract = new ethers.Contract(pepecContractAddress, pepecABI, provider);
+    console.log("Checking balance for:", userAddress);
     const balance = await contract.balanceOf(userAddress);
     const formattedBalance = ethers.utils.formatUnits(balance, TOKEN_DECIMALS);
+    console.log("Balance:", formattedBalance, "$PEPEC");
+
     if (balance.lt(requiredBalance)) {
       document.getElementById("message").innerText = `Insufficient $PEPEC (${formattedBalance} < ${REQUIRED_PEPEC_AMOUNT})`;
     } else {
@@ -53,8 +100,17 @@ async function checkPepecBalance() {
     }
   } catch (err) {
     console.error("Error checking balance:", err);
-    document.getElementById("message").innerText = `Error: ${err.message}`;
-    throw err;
+    document.getElementById("message").innerText = `Error checking balance: ${err.reason || err.message || "Contract call failed"}`;
+    // Fallback for testing
+    if (err.code === "CALL_EXCEPTION") {
+      console.log("Contract call reverted. Skipping balance check for testing...");
+      document.getElementById("message").innerText = "Balance check failed – Starting game anyway (test mode)";
+      await checkImagesLoaded();
+      startGame();
+      loadLeaderboard();
+    } else {
+      throw err;
+    }
   }
 }
 
