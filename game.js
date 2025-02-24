@@ -267,32 +267,38 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// Touch Controls: One lane at a time
-const step = 50; // Match lane spacing (50px)
-let hasMoved = false; // Track if move has occurred in this swipe
+// Movement Controls
+const step = 15; // Smaller step for smoother movement
+let touchStartX = null, touchStartY = null;
+let lastTouchMove = 0; // Timestamp to debounce touch moves
 
 canvas.addEventListener("touchstart", (e) => {
   e.preventDefault();
   if (gameOver) return;
-  hasMoved = false; // Reset for new swipe
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+  lastTouchMove = 0; // Reset debounce
 });
 
 canvas.addEventListener("touchmove", (e) => {
   e.preventDefault();
-  if (gameOver || hasMoved) return;
+  if (gameOver || !touchStartX || !touchStartY) return;
+  
+  const now = Date.now();
+  if (now - lastTouchMove < 200) return; // Debounce: max 1 move every 200ms
+
   const touch = e.touches[0];
-  const deltaX = touch.clientX - (touchStartX || touch.clientX);
-  const deltaY = touch.clientY - (touchStartY || touch.clientY);
+  const deltaX = touch.clientX - touchStartX;
+  const deltaY = touch.clientY - touchStartY;
 
   if (Math.abs(deltaX) > Math.abs(deltaY)) {
     if (deltaX > 20) {
       frog.x += step;
       if (frog.x > canvas.width - frog.width) frog.x = canvas.width - frog.width;
-      hasMoved = true;
     } else if (deltaX < -20) {
       frog.x -= step;
       if (frog.x < 0) frog.x = 0;
-      hasMoved = true;
     }
   } else {
     if (deltaY < -20) {
@@ -301,24 +307,23 @@ canvas.addEventListener("touchmove", (e) => {
         score += 10;
         highestY = frog.y;
       }
-      hasMoved = true;
     } else if (deltaY > 20) {
       frog.y += step;
-      hasMoved = true;
     }
   }
 
   if (frog.y <= 50) levelUp();
   updateUI();
+  lastTouchMove = now;
   touchStartX = touch.clientX;
   touchStartY = touch.clientY;
 });
 
-canvas.addEventListener("touchend", () => {
-  hasMoved = false;
+canvas.addEventListener("touchend", (e) => {
+  touchStartX = null;
+  touchStartY = null;
 });
 
-// Keyboard Controls for Desktop
 document.addEventListener("keydown", (e) => {
   if (gameOver) return;
   switch (e.key) {
