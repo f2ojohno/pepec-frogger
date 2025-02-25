@@ -1,10 +1,10 @@
 // ===== CONFIGURATION =====
-const REQUIRED_PEPEC_AMOUNT = "0"; // For testing
+const REQUIRED_PEPEC_AMOUNT = "0"; // For testing, adjust for production
 const TOKEN_DECIMALS = 18;
 const requiredBalance = ethers.utils.parseUnits(REQUIRED_PEPEC_AMOUNT, TOKEN_DECIMALS);
 const pepecContractAddress = "0x1196c6704789620514fD25632aBe15F69a50bc4f";
 const pepecABI = ["function balanceOf(address owner) view returns (uint256)"];
-const BASE_CHAIN_ID = 8453;
+const BASE_CHAIN_ID = 8453; // Base L2 Mainnet chain ID
 
 console.log("Configuration loaded.");
 
