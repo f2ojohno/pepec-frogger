@@ -13,9 +13,13 @@ const backgroundMusic = new Audio("background_music.mp3");
 backgroundMusic.loop = true;
 backgroundMusic.volume = 0.5;
 
+// Preload jump sound as a single instance
+const jumpSound = new Audio("jump_sound.mp3");
+jumpSound.volume = 0.7;
+jumpSound.preload = "auto"; // Preload to reduce initial lag
+
 function playJumpSound() {
-  const jumpSound = new Audio("jump_sound.mp3");
-  jumpSound.volume = 0.7;
+  jumpSound.currentTime = 0; // Rewind to start
   jumpSound.play().catch(err => console.error("Error playing jump sound:", err));
   console.log("Jump sound triggered");
 }
