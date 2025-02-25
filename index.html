@@ -34,33 +34,36 @@
       text-align: center;
       line-height: 1.6;
       overflow-y: auto;
+      perspective: 1000px; /* Global 3D perspective */
     }
 
     .arcade-machine {
       width: 900px;
       max-width: 100%;
-      background: linear-gradient(to bottom, #2a3a5a, #1a2a4a); /* Metallic blue gradient */
+      background: linear-gradient(to bottom right, #2a3a5a, #1a2a4a); /* Metallic blue gradient with depth */
       border: 15px solid #333;
       border-radius: 20px 20px 10px 10px;
-      box-shadow: 0 0 30px rgba(0, 0, 255, 0.3), inset 0 0 15px #00008b;
+      box-shadow: 0 0 40px rgba(0, 0, 255, 0.3), inset 0 0 20px #00008b, 0 10px 20px rgba(0, 0, 0, 0.5); /* Enhanced shadow for 3D */
       position: relative;
-      overflow: hidden;
-      perspective: 1000px;
+      padding: 20px 20px 40px; /* More padding for depth */
+      transform: rotateX(5deg) rotateY(5deg); /* Slight 3D tilt */
     }
 
     .marquee {
       background: #00008b; /* Dark blue LED */
       padding: 20px;
       border-bottom: 5px solid #0000ff; /* Bright blue glow */
-      box-shadow: 0 0 20px #0000ff, inset 0 0 10px #00008b;
+      box-shadow: 0 0 25px #0000ff, inset 0 0 15px #00008b, 0 5px 10px rgba(0, 0, 0, 0.3); /* Deeper glow and shadow */
       text-align: center;
+      border-radius: 10px 10px 0 0;
+      transform: translateZ(10px); /* Push forward for 3D */
     }
 
     .marquee h1 {
       margin: 0;
       font-size: 2.5em;
       color: #ffd700; /* Yellow text */
-      text-shadow: 0 0 15px #ffd700, 0 0 5px #0000ff;
+      text-shadow: 0 0 15px #ffd700, 0 0 5px #0000ff, 0 2px 5px #000;
       animation: flicker 2s infinite;
       font-weight: bold;
     }
@@ -69,33 +72,38 @@
       margin: 5px 0 0;
       font-size: 1em;
       color: #00ffff; /* Cyan hint */
-      text-shadow: 0 0 10px #00ffff;
+      text-shadow: 0 0 10px #00ffff, 0 2px 5px #000;
     }
 
     .screen-bezel {
       max-width: 840px;
-      margin: 20px auto;
+      margin: 0 auto;
       background: #000; /* CRT black */
-      border: 15px solid #666; /* Gray bezel */
+      border: 15px solid #666; /* Gray bezel with depth */
       border-radius: 15px;
-      box-shadow: inset 0 0 30px #fff, 0 0 15px #000;
+      box-shadow: inset 0 0 40px #fff, 0 0 20px #000, 0 5px 15px rgba(0, 0, 0, 0.4); /* Enhanced CRT glow and shadow */
       position: relative;
+      transform: translateZ(20px); /* Push forward for 3D */
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .game-container {
-      width: 800px;
-      height: 600px;
+      width: 800px; /* Fixed width to match reference */
+      height: 600px; /* Fixed height to match reference */
       position: relative;
       background: #000;
     }
 
     #gameCanvas {
       border: 2px solid #333;
-      width: 800px;
-      height: 600px;
+      width: 800px; /* Fixed width */
+      height: 600px; /* Fixed height */
       display: block;
-      margin: 0 auto;
+      margin: 0 auto; /* Center perfectly in bezel */
       touch-action: none;
+      transform: translateZ(5px); /* Slight 3D lift */
     }
 
     .game-container::before {
@@ -124,7 +132,8 @@
       border-radius: 5px;
       font-size: 1em;
       z-index: 10;
-      text-shadow: 0 0 5px #0000ff;
+      text-shadow: 0 0 5px #0000ff, 0 1px 3px #000;
+      transform: translateZ(2px); /* Slight 3D lift */
     }
 
     #score, #highScore, #level {
@@ -138,6 +147,7 @@
       left: 50%;
       transform: translate(-50%, -50%);
       transition: opacity 0.3s ease;
+      z-index: 20;
     }
 
     .login-container.hidden {
@@ -153,18 +163,19 @@
       border-radius: 10px;
       cursor: pointer;
       transition: background-color 0.3s, transform 0.1s;
-      box-shadow: 0 0 15px #00ffff, inset 0 0 5px #fff;
+      box-shadow: 0 0 15px #00ffff, inset 0 0 5px #fff, 0 2px 10px rgba(0, 0, 0, 0.3);
       font-family: 'Press Start 2P', 'Arial', sans-serif;
+      transform: translateZ(5px); /* 3D lift */
     }
 
     #connectWalletBtn:hover {
       background: #ffd700;
-      transform: translateY(-2px);
-      box-shadow: 0 0 20px #ffd700;
+      transform: translateY(-2px) translateZ(5px);
+      box-shadow: 0 0 20px #ffd700, 0 4px 15px rgba(0, 0, 0, 0.4);
     }
 
     #connectWalletBtn:active {
-      transform: translateY(0);
+      transform: translateY(0) translateZ(5px);
     }
 
     .control-panel {
@@ -174,7 +185,8 @@
       padding: 20px;
       background: #2a3a5a;
       border-top: 5px solid #666;
-      box-shadow: inset 0 0 10px #00008b;
+      box-shadow: inset 0 0 15px #00008b, 0 5px 15px rgba(0, 0, 0, 0.4);
+      transform: translateZ(10px); /* Push forward for 3D */
     }
 
     .speaker {
@@ -183,8 +195,9 @@
       background: #333;
       border-radius: 50%;
       border: 5px solid #666;
-      box-shadow: 0 0 10px #000;
+      box-shadow: 0 0 15px #000, inset 0 0 5px #666, 0 2px 10px rgba(0, 0, 0, 0.3);
       margin: 0 20px;
+      transform: translateZ(5px); /* Slight lift */
     }
 
     .joystick {
@@ -193,9 +206,10 @@
       background: #000;
       border: 5px solid #fff;
       border-radius: 50%;
-      box-shadow: 0 0 15px #fff;
+      box-shadow: 0 0 20px #fff, inset 0 0 5px #666, 0 2px 10px rgba(0, 0, 0, 0.3);
       position: relative;
       margin-right: 20px;
+      transform: translateZ(5px); /* Lift for depth */
     }
 
     .joystick::before {
@@ -208,7 +222,8 @@
       background: #ff4500;
       border-radius: 50%;
       transform: translate(-50%, -50%);
-      box-shadow: 0 0 5px #ff4500;
+      box-shadow: 0 0 5px #ff4500, 0 1px 5px rgba(0, 0, 0, 0.3);
+      transform: translate(-50%, -50%) translateZ(2px); /* Slight push forward */
     }
 
     .arcade-button {
@@ -220,7 +235,8 @@
       font-size: 1em;
       color: #fff;
       cursor: default;
-      box-shadow: 0 0 10px #fff;
+      box-shadow: 0 0 15px #fff, inset 0 0 5px #666, 0 2px 10px rgba(0, 0, 0, 0.3);
+      transform: translateZ(5px); /* Lift for depth */
     }
 
     .arcade-button.red {
@@ -248,8 +264,9 @@
       background: rgba(0, 0, 0, 0.8);
       padding: 5px;
       border-radius: 5px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      text-shadow: 0 0 5px #0000ff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1), 0 0 10px #0000ff;
+      text-shadow: 0 0 5px #0000ff, 0 1px 3px #000;
+      transform: translateZ(2px); /* Slight lift */
     }
 
     .leaderboard {
@@ -261,13 +278,14 @@
       border-radius: 5px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 0 10px #0000ff;
       color: #fff;
+      transform: translateZ(2px); /* Slight lift */
     }
 
     .leaderboard h3 {
       margin: 0 0 10px;
       color: #ffd700;
       font-size: 1.2em;
-      text-shadow: 0 0 5px #0000ff;
+      text-shadow: 0 0 5px #0000ff, 0 1px 3px #000;
     }
 
     .leaderboard-list {
@@ -303,14 +321,13 @@
       .marquee p {
         font-size: 0.6em;
       }
-      .game-container {
+      .screen-bezel {
         max-width: 100%;
-        height: 50vh;
         margin: 10px auto;
       }
-      #gameCanvas {
+      .game-container, #gameCanvas {
         width: 100%;
-        height: 100%;
+        height: 50vh;
       }
       #game-ui {
         font-size: 0.8em;
