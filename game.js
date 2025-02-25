@@ -25,12 +25,11 @@ let provider, signer, userAddress;
 
 // Wait for DOM to load before setting up event listeners
 document.addEventListener("DOMContentLoaded", () => {
-  const CoinbaseWalletSDK = window.CoinbaseWalletSDK;
-  const WalletConnectProvider = window.WalletConnectProvider;
-
   // Coinbase Wallet Connection
   async function connectCoinbaseWallet() {
     try {
+      if (!window.CoinbaseWalletSDK) throw new Error("Coinbase Wallet SDK not loaded");
+      const CoinbaseWalletSDK = window.CoinbaseWalletSDK.default || window.CoinbaseWalletSDK; // Handle UMD default export
       const coinbaseWallet = new CoinbaseWalletSDK({
         appName: "Silver Robot Frog Game",
         appChainIds: [BASE_CHAIN_ID]
@@ -52,7 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // WalletConnect Connection (MetaMask, OKX, SafePal, Rainbow, Phantom, etc.)
   async function connectWalletConnect() {
     try {
-      const wcProvider = new WalletConnectProvider({
+      if (!window.WalletConnectProvider) throw new Error("WalletConnect not loaded");
+      const WalletConnectProviderConstructor = window.WalletConnectProvider.default || window.WalletConnectProvider; // Handle UMD default export
+      const wcProvider = new WalletConnectProviderConstructor({
         rpc: { [BASE_CHAIN_ID]: "https://mainnet.base.org" },
         chainId: BASE_CHAIN_ID,
         qrcode: true // Show QR code for mobile wallets
