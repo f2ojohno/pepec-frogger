@@ -69,9 +69,18 @@
     <h3>Local Leaderboard</h3>
     <ul id="leaderboardList" class="leaderboard-list"></ul>
   </section>
+  <!-- Wallet Selection Modal -->
+  <div id="walletModal">
+    <div class="modal-content">
+      <h2>Select Wallet</h2>
+      <button class="wallet-button" id="coinbaseWalletBtn">Coinbase Wallet</button>
+      <button class="wallet-button" id="walletConnectBtn">WalletConnect (MetaMask, OKX, etc.)</button>
+      <button class="wallet-button" onclick="document.getElementById('walletModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
   <!-- External Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/@coinbase/wallet-sdk@3.9.3/dist/index.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@coinbase/wallet-sdk@3.9.3/dist/coinbaseWalletSDK.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js" crossorigin="anonymous"></script>
   <script src="game.js"></script>
 </body>
