@@ -23,117 +23,54 @@
 
   <style>
     body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      background: linear-gradient(to bottom, #87CEEB, #f2f2f2);
       margin: 0;
       padding: 0;
-      background: #0a0a1a; /* Dark arcade room */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: 'Press Start 2P', 'Arial', sans-serif;
-      text-align: center;
       line-height: 1.6;
-      overflow-y: auto;
-      perspective: 1000px; /* Global 3D perspective */
+      overflow: hidden;
     }
 
-    .arcade-machine {
-      width: 900px;
-      max-width: 100%;
-      background: linear-gradient(to bottom right, #2a3a5a, #1a2a4a); /* Metallic blue gradient with depth */
-      border: 15px solid #333;
-      border-radius: 20px 20px 10px 10px;
-      box-shadow: 0 0 40px rgba(0, 0, 255, 0.3), inset 0 0 20px #00008b, 0 10px 20px rgba(0, 0, 0, 0.5); /* Enhanced shadow for 3D */
-      position: relative;
-      padding: 20px 20px 40px; /* More padding for depth */
-      transform: rotateX(5deg) rotateY(5deg); /* Slight 3D tilt */
+    header {
+      padding: 10px;
+      background-color: #333;
+      color: white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
 
-    .marquee {
-      background: #00008b; /* Dark blue LED */
-      padding: 20px;
-      border-bottom: 5px solid #0000ff; /* Bright blue glow */
-      box-shadow: 0 0 25px #0000ff, inset 0 0 15px #00008b, 0 5px 10px rgba(0, 0, 0, 0.3); /* Deeper glow and shadow */
-      text-align: center;
-      border-radius: 10px 10px 0 0;
-      transform: translateZ(10px); /* Push forward for 3D */
-    }
-
-    .marquee h1 {
+    h1 {
       margin: 0;
-      font-size: 2.5em;
-      color: #ffd700; /* Yellow text */
-      text-shadow: 0 0 15px #ffd700, 0 0 5px #0000ff, 0 2px 5px #000;
-      animation: flicker 2s infinite;
-      font-weight: bold;
-    }
-
-    .marquee p {
-      margin: 5px 0 0;
-      font-size: 1em;
-      color: #00ffff; /* Cyan hint */
-      text-shadow: 0 0 10px #00ffff, 0 2px 5px #000;
-    }
-
-    .screen-bezel {
-      max-width: 840px;
-      margin: 0 auto;
-      background: #000; /* CRT black */
-      border: 15px solid #666; /* Gray bezel with depth */
-      border-radius: 15px;
-      box-shadow: inset 0 0 40px #fff, 0 0 20px #000, 0 5px 15px rgba(0, 0, 0, 0.4); /* Enhanced CRT glow and shadow */
-      position: relative;
-      transform: translateZ(20px); /* Push forward for 3D */
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      font-size: 1.5em;
     }
 
     .game-container {
-      width: 800px; /* Fixed width to match reference */
-      height: 600px; /* Fixed height to match reference */
+      max-width: 800px;
+      margin: 10px auto;
       position: relative;
-      background: #000;
     }
 
     #gameCanvas {
       border: 2px solid #333;
-      width: 800px; /* Fixed width */
-      height: 600px; /* Fixed height */
-      display: block;
-      margin: 0 auto; /* Center perfectly in bezel */
-      touch-action: none;
-      transform: translateZ(5px); /* Slight 3D lift */
-    }
-
-    .game-container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
+      background-color: #fff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
       width: 100%;
-      height: 100%;
-      background: repeating-linear-gradient(
-        transparent 0%,
-        rgba(255, 255, 255, 0.05) 1%,
-        transparent 2%
-      );
-      pointer-events: none;
-      z-index: 1;
+      height: auto;
+      max-height: 600px;
+      touch-action: none;
     }
 
     #game-ui {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      color: #ffd700;
-      background: rgba(0, 0, 0, 0.8);
-      padding: 5px 10px;
+      top: 5px;
+      left: 5px;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 5px;
       border-radius: 5px;
-      font-size: 1em;
+      font-size: 0.9em;
       z-index: 10;
-      text-shadow: 0 0 5px #0000ff, 0 1px 3px #000;
-      transform: translateZ(2px); /* Slight 3D lift */
     }
 
     #score, #highScore, #level {
@@ -141,191 +78,86 @@
       font-weight: bold;
     }
 
+    .login-container, .message, .leaderboard {
+      max-width: 800px;
+      margin: 10px auto;
+    }
+
     .login-container {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
       transition: opacity 0.3s ease;
-      z-index: 20;
     }
 
     .login-container.hidden {
       opacity: 0;
     }
 
-    #connectWalletBtn {
-      padding: 15px 30px;
-      font-size: 1.2em;
-      background: #00ffff;
-      color: #000;
-      border: 5px solid #ffd700;
-      border-radius: 10px;
+    #login button {
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
       transition: background-color 0.3s, transform 0.1s;
-      box-shadow: 0 0 15px #00ffff, inset 0 0 5px #fff, 0 2px 10px rgba(0, 0, 0, 0.3);
-      font-family: 'Press Start 2P', 'Arial', sans-serif;
-      transform: translateZ(5px); /* 3D lift */
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
 
-    #connectWalletBtn:hover {
-      background: #ffd700;
-      transform: translateY(-2px) translateZ(5px);
-      box-shadow: 0 0 20px #ffd700, 0 4px 15px rgba(0, 0, 0, 0.4);
+    #login button:hover {
+      background-color: #45a049;
+      transform: translateY(-2px);
     }
 
-    #connectWalletBtn:active {
-      transform: translateY(0) translateZ(5px);
-    }
-
-    .control-panel {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      background: #2a3a5a;
-      border-top: 5px solid #666;
-      box-shadow: inset 0 0 15px #00008b, 0 5px 15px rgba(0, 0, 0, 0.4);
-      transform: translateZ(10px); /* Push forward for 3D */
-    }
-
-    .speaker {
-      width: 80px;
-      height: 80px;
-      background: #333;
-      border-radius: 50%;
-      border: 5px solid #666;
-      box-shadow: 0 0 15px #000, inset 0 0 5px #666, 0 2px 10px rgba(0, 0, 0, 0.3);
-      margin: 0 20px;
-      transform: translateZ(5px); /* Slight lift */
-    }
-
-    .joystick {
-      width: 50px;
-      height: 50px;
-      background: #000;
-      border: 5px solid #fff;
-      border-radius: 50%;
-      box-shadow: 0 0 20px #fff, inset 0 0 5px #666, 0 2px 10px rgba(0, 0, 0, 0.3);
-      position: relative;
-      margin-right: 20px;
-      transform: translateZ(5px); /* Lift for depth */
-    }
-
-    .joystick::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 20px;
-      height: 20px;
-      background: #ff4500;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      box-shadow: 0 0 5px #ff4500, 0 1px 5px rgba(0, 0, 0, 0.3);
-      transform: translate(-50%, -50%) translateZ(2px); /* Slight push forward */
-    }
-
-    .arcade-button {
-      width: 40px;
-      height: 40px;
-      margin: 0 10px;
-      border-radius: 50%;
-      border: 3px solid #fff;
-      font-size: 1em;
-      color: #fff;
-      cursor: default;
-      box-shadow: 0 0 15px #fff, inset 0 0 5px #666, 0 2px 10px rgba(0, 0, 0, 0.3);
-      transform: translateZ(5px); /* Lift for depth */
-    }
-
-    .arcade-button.red {
-      background: #ff0000;
-    }
-
-    .arcade-button.blue {
-      background: #0000ff;
-    }
-
-    .arcade-button.yellow {
-      background: #ffd700;
-    }
-
-    .arcade-button.green {
-      background: #00ff00;
+    #login button:active {
+      transform: translateY(0);
     }
 
     .message {
-      max-width: 800px;
-      margin: 10px auto;
       font-weight: bold;
-      color: #00ffff;
+      color: #333;
       font-size: 1em;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(255, 255, 255, 0.8);
       padding: 5px;
       border-radius: 5px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1), 0 0 10px #0000ff;
-      text-shadow: 0 0 5px #0000ff, 0 1px 3px #000;
-      transform: translateZ(2px); /* Slight lift */
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     .leaderboard {
-      max-width: 800px;
-      margin: 20px auto;
-      background: rgba(0, 0, 0, 0.8);
+      background: white;
       padding: 10px;
-      border: 3px solid #00ffff;
       border-radius: 5px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 0 10px #0000ff;
-      color: #fff;
-      transform: translateZ(2px); /* Slight lift */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
     }
 
     .leaderboard h3 {
-      margin: 0 0 10px;
-      color: #ffd700;
+      margin-top: 0;
+      color: #333;
       font-size: 1.2em;
-      text-shadow: 0 0 5px #0000ff, 0 1px 3px #000;
     }
 
     .leaderboard-list {
       list-style: none;
       padding: 0;
       margin: 0;
-      font-size: 0.9em;
-      color: #00ffff;
     }
 
     .leaderboard-list li {
       padding: 5px;
-      border-bottom: 1px solid #555;
+      border-bottom: 1px solid #ddd;
+      font-size: 0.9em;
     }
 
     .leaderboard-list li:last-child {
       border-bottom: none;
     }
 
-    @keyframes flicker {
-      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
-      20%, 24%, 55% { opacity: 0.7; }
-    }
-
     @media (max-width: 800px) {
-      .arcade-machine {
-        width: 100%;
-        border-width: 5px;
-      }
-      .marquee h1 {
-        font-size: 1.5em;
-      }
-      .marquee p {
-        font-size: 0.6em;
-      }
-      .screen-bezel {
+      .game-container, .login-container, .message, .leaderboard {
         max-width: 100%;
-        margin: 10px auto;
+        margin: 5px 0;
       }
-      .game-container, #gameCanvas {
+      #gameCanvas {
         width: 100%;
         height: 50vh;
       }
@@ -333,25 +165,8 @@
         font-size: 0.8em;
         padding: 3px;
       }
-      .control-panel {
-        padding: 10px;
-      }
-      .speaker {
-        width: 50px;
-        height: 50px;
-      }
-      .joystick, .arcade-button {
-        width: 30px;
-        height: 30px;
-      }
-      .joystick::before {
-        width: 15px;
-        height: 15px;
-      }
-      .message, .leaderboard {
-        max-width: 100%;
-        margin: 10px auto;
-        font-size: 0.8em;
+      header h1 {
+        font-size: 1.2em;
       }
     }
 
@@ -359,39 +174,25 @@
   </style>
 </head>
 <body>
-  <div class="arcade-machine">
-    <div class="marquee">
-      <h1>PEPEC FROGGER</h1>
-      <p>Insert $PEPEC to Play</p>
+  <header>
+    <h1>PEPEC FROGGER</h1>
+  </header>
+  <main class="game-container">
+    <div id="game-ui">
+      <div id="score">Score: 0</div>
+      <div id="highScore">High Score: 0</div>
+      <div id="level">Level: 1</div>
     </div>
-    <div class="screen-bezel">
-      <main class="game-container">
-        <div id="game-ui">
-          <div id="score">Score: 0</div>
-          <div id="highScore">High Score: 0</div>
-          <div id="level">Level: 1</div>
-        </div>
-        <canvas id="gameCanvas" width="800" height="600" aria-label="PEPEC FROGGER Game Canvas"></canvas>
-        <div id="login" class="login-container">
-          <button id="connectWalletBtn" aria-label="Connect your Web3 wallet">Connect Wallet</button>
-        </div>
-      </main>
-    </div>
-    <div class="control-panel">
-      <div class="speaker"></div>
-      <div class="joystick"></div>
-      <button class="arcade-button red">A</button>
-      <button class="arcade-button blue">B</button>
-      <button class="arcade-button yellow">C</button>
-      <button class="arcade-button green">D</button>
-      <div class="speaker"></div>
+    <canvas id="gameCanvas" width="800" height="600" aria-label="PEPEC FROGGER Game Canvas"></canvas>
+    <div id="login" class="login-container">
+      <button id="connectWalletBtn" aria-label="Connect your Web3 wallet">Connect Wallet</button>
     </div>
     <div id="message" class="message" role="alert"></div>
-    <section id="leaderboard" class="leaderboard">
-      <h3>Local Leaderboard</h3>
-      <ul id="leaderboardList" class="leaderboard-list"></ul>
-    </section>
-  </div>
+  </main>
+  <section id="leaderboard" class="leaderboard">
+    <h3>Local Leaderboard</h3>
+    <ul id="leaderboardList" class="leaderboard-list"></ul>
+  </section>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
   <script src="game.js"></script>
 </body>
