@@ -397,37 +397,36 @@ function handleGameOver() {
   }, 100);
 }
 
-// Local Storage Leaderboard Functions
-function submitScore(finalScore) {
-  let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-  leaderboard.push({ user: userAddress || "Anonymous", score: finalScore });
-  
-  const uniqueEntries = {};
-  leaderboard.forEach(entry => {
-    if (!uniqueEntries[entry.user.toLowerCase()] || entry.score > uniqueEntries[entry.user.toLowerCase()].score) {
-      uniqueEntries[entry.user.toLowerCase()] = { user: entry.user, score: entry.score };
+// Updated Leaderboard Functions for Vercel API
+async function submitScore(finalScore) {
+  try {
+    const response = await fetch('/api/leaderboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: userAddress || 'Anonymous', score: finalScore })
+    });
+    if (response.ok) {
+      document.getElementById('message').innerText += ' | Score submitted!';
+      loadLeaderboard();
+    } else {
+      throw new Error('Failed to submit score');
     }
-  });
-  leaderboard = Object.values(uniqueEntries);
-  leaderboard.sort((a, b) => b.score - a.score);
-  leaderboard = leaderboard.slice(0, 10);
-
-  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-  document.getElementById("message").innerText += " | Score submitted!";
-  loadLeaderboard();
+  } catch (err) {
+    console.error('Error submitting score:', err);
+    document.getElementById('message').innerText += ' | Error submitting score';
+  }
 }
 
-function loadLeaderboard() {
-  let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-  const leaderboardList = document.getElementById("leaderboardList");
-  leaderboardList.innerHTML = "";
-  if (leaderboard.length === 0) {
-    leaderboardList.innerHTML = "<li>No scores yet!</li>";
-  } else {
-    leaderboard.forEach(entry => {
-      let li = document.createElement("li");
-      li.textContent = `${entry.user.substring(0, 6)}...${entry.user.substring(entry.user.length - 4)} : ${entry.score}`;
-      leaderboardList.appendChild(li);
-    });
+async function loadLeaderboard() {
+  try {
+    const response = await fetch('/api/leaderboard');
+    const leaderboard = await response.json();
+    const leaderboardList = document.getElementById('leaderboardList');
+    leaderboardList.innerHTML = leaderboard.length === 0 
+      ? '<li>No scores yet!</li>' 
+      : leaderboard.map(entry => `<li>${entry.user.substring(0, 6)}...${entry.user.substring(entry.user.length - 4)} : ${entry.score}</li>`).join('');
+  } catch (err) {
+    console.error('Error loading leaderboard:', err);
+    document.getElementById('leaderboardList').innerHTML = '<li>Error loading leaderboard</li>';
   }
 }
