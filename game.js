@@ -1,10 +1,11 @@
 // ===== CONFIGURATION =====
-const REQUIRED_PEPEC_AMOUNT = "0"; // For testing, adjust for production
+const REQUIRED_PEPEC_AMOUNT = "0"; // For testing
 const TOKEN_DECIMALS = 18;
 const requiredBalance = ethers.utils.parseUnits(REQUIRED_PEPEC_AMOUNT, TOKEN_DECIMALS);
 const pepecContractAddress = "0x1196c6704789620514fD25632aBe15F69a50bc4f";
 const pepecABI = ["function balanceOf(address owner) view returns (uint256)"];
-const BASE_CHAIN_ID = 8453; // Base L2 Mainnet chain ID
+const BASE_CHAIN_ID = 8453;
+const SERVER_URL = "http://localhost:3000"; // Update to your server URL
 
 console.log("Configuration loaded.");
 
@@ -13,15 +14,13 @@ const backgroundMusic = new Audio("background_music.mp3");
 backgroundMusic.loop = true;
 backgroundMusic.volume = 0.5;
 
-// Preload jump sound as a single instance
 const jumpSound = new Audio("jump_sound.mp3");
 jumpSound.volume = 0.7;
-jumpSound.preload = "auto"; // Preload to reduce initial lag
+jumpSound.preload = "auto";
 
 function playJumpSound() {
-  jumpSound.currentTime = 0; // Rewind to start
+  jumpSound.currentTime = 0;
   jumpSound.play().catch(err => console.error("Error playing jump sound:", err));
-  console.log("Jump sound triggered");
 }
 
 // ===== WALLET CONNECTION & TOKEN BALANCE CHECK =====
@@ -44,29 +43,11 @@ async function connectWallet() {
     console.log("Connected address:", userAddress);
 
     const network = await provider.getNetwork();
-    console.log("Connected to network:", network.name, "Chain ID:", network.chainId);
     if (network.chainId !== BASE_CHAIN_ID) {
-      try {
-        await window.ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: `0x${BASE_CHAIN_ID.toString(16)}` }],
-        });
-      } catch (switchError) {
-        if (switchError.code === 4902) {
-          await window.ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [{
-              chainId: `0x${BASE_CHAIN_ID.toString(16)}`,
-              chainName: "Base Mainnet",
-              nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-              rpcUrls: ["https://mainnet.base.org"],
-              blockExplorerUrls: ["https://basescan.org"]
-            }]
-          });
-        } else {
-          throw new Error("Please switch to Base network.");
-        }
-      }
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: `0x${BASE_CHAIN_ID.toString(16)}` }],
+      });
     }
 
     document.getElementById("message").innerText = `Wallet connected: ${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
@@ -81,11 +62,9 @@ async function checkPepecBalance() {
   try {
     if (!provider || !userAddress) throw new Error("Wallet not connected.");
     const network = await provider.getNetwork();
-    console.log("Connected to network:", network.name, "Chain ID:", network.chainId);
     if (network.chainId !== BASE_CHAIN_ID) throw new Error("Wallet not on Base network (chain ID 8453).");
 
     const contract = new ethers.Contract(pepecContractAddress, pepecABI, provider);
-    console.log("Checking balance for:", userAddress);
     const balance = await contract.balanceOf(userAddress);
     const formattedBalance = ethers.utils.formatUnits(balance, TOKEN_DECIMALS);
     console.log("Balance:", formattedBalance, "$PEPEC");
@@ -100,14 +79,7 @@ async function checkPepecBalance() {
     }
   } catch (err) {
     console.error("Error checking balance:", err);
-    document.getElementById("message").innerText = `Error checking balance: ${err.reason || err.message || "Contract call failed"}`;
-    if (err.code === "CALL_EXCEPTION") {
-      console.log("Contract call reverted. Starting game in test mode...");
-      document.getElementById("message").innerText = "Balance check failed – Starting game anyway (test mode)";
-      await checkImagesLoaded();
-      startGame();
-      loadLeaderboard();
-    }
+    document.getElementById("message").innerText = `Error: ${err.message || "Contract call failed"}`;
   }
 }
 
@@ -281,7 +253,6 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// Movement Controls
 const step = 15;
 let touchStartX = null, touchStartY = null;
 let lastTouchMove = 0;
@@ -397,37 +368,42 @@ function handleGameOver() {
   }, 100);
 }
 
-// Local Storage Leaderboard Functions
-function submitScore(finalScore) {
-  let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-  leaderboard.push({ user: userAddress || "Anonymous", score: finalScore });
-  
-  const uniqueEntries = {};
-  leaderboard.forEach(entry => {
-    if (!uniqueEntries[entry.user.toLowerCase()] || entry.score > uniqueEntries[entry.user.toLowerCase()].score) {
-      uniqueEntries[entry.user.toLowerCase()] = { user: entry.user, score: entry.score };
+async function submitScore(finalScore) {
+  try {
+    const response = await fetch(`${SERVER_URL}/submitScore`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: userAddress || "Anonymous", score: finalScore })
+    });
+    if (response.ok) {
+      document.getElementById("message").innerText += " | Score submitted!";
+      loadLeaderboard();
+    } else {
+      throw new Error('Failed to submit score');
     }
-  });
-  leaderboard = Object.values(uniqueEntries);
-  leaderboard.sort((a, b) => b.score - a.score);
-  leaderboard = leaderboard.slice(0, 10);
-
-  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-  document.getElementById("message").innerText += " | Score submitted!";
-  loadLeaderboard();
+  } catch (err) {
+    console.error("Error submitting score:", err);
+    document.getElementById("message").innerText += " | Error submitting score";
+  }
 }
 
-function loadLeaderboard() {
-  let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-  const leaderboardList = document.getElementById("leaderboardList");
-  leaderboardList.innerHTML = "";
-  if (leaderboard.length === 0) {
-    leaderboardList.innerHTML = "<li>No scores yet!</li>";
-  } else {
-    leaderboard.forEach(entry => {
-      let li = document.createElement("li");
-      li.textContent = `${entry.user.substring(0, 6)}...${entry.user.substring(entry.user.length - 4)} : ${entry.score}`;
-      leaderboardList.appendChild(li);
-    });
+async function loadLeaderboard() {
+  try {
+    const response = await fetch(`${SERVER_URL}/leaderboard`);
+    const leaderboard = await response.json();
+    const leaderboardList = document.getElementById("leaderboardList");
+    leaderboardList.innerHTML = "";
+    if (!leaderboard || leaderboard.length === 0) {
+      leaderboardList.innerHTML = "<li>No scores yet!</li>";
+    } else {
+      leaderboard.forEach(entry => {
+        let li = document.createElement("li");
+        li.textContent = `${entry.user.substring(0, 6)}...${entry.user.substring(entry.user.length - 4)} : ${entry.score}`;
+        leaderboardList.appendChild(li);
+      });
+    }
+  } catch (err) {
+    console.error("Error loading leaderboard:", err);
+    document.getElementById("leaderboardList").innerHTML = "<li>Error loading scores</li>";
   }
 }
