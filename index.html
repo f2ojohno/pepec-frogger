@@ -21,6 +21,33 @@
 
   <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://warpcast.com https://*.warpcast.com;">
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Wallet Modal Styles */
+    #walletModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .wallet-button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -42,7 +69,10 @@
     <h3>Local Leaderboard</h3>
     <ul id="leaderboardList" class="leaderboard-list"></ul>
   </section>
+  <!-- External Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@coinbase/wallet-sdk@3.9.3/dist/index.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js" crossorigin="anonymous"></script>
   <script src="game.js"></script>
 </body>
 </html>
