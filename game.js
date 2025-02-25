@@ -48,18 +48,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // WalletConnect Connection (MetaMask, OKX, SafePal, Rainbow, Phantom, etc.)
+  // WalletConnect v2 Connection (MetaMask, OKX, SafePal, Rainbow, Phantom, etc.)
   async function connectWalletConnect() {
     try {
-      if (!window.WalletConnectProvider) throw new Error("WalletConnect not loaded");
-      const WalletConnectProviderConstructor = window.WalletConnectProvider.default || window.WalletConnectProvider; // Handle UMD default export
-      const wcProvider = new WalletConnectProviderConstructor({
-        rpc: { [BASE_CHAIN_ID]: "https://mainnet.base.org" },
-        chainId: BASE_CHAIN_ID,
-        qrcode: true // Show QR code for mobile wallets
+      if (!window.EthereumProvider) throw new Error("WalletConnect v2 not loaded");
+      const EthereumProvider = window.EthereumProvider.default || window.EthereumProvider; // Handle UMD default export
+      provider = await EthereumProvider.init({
+        projectId: "c33b868f6f83d97612bdfa07c7e3a3d6", // Public WalletConnect project ID or register your own at walletconnect.com
+        chains: [BASE_CHAIN_ID],
+        optionalChains: [BASE_CHAIN_ID],
+        rpcMap: { [BASE_CHAIN_ID]: "https://mainnet.base.org" },
+        showQrModal: true
       });
-      await wcProvider.enable();
-      provider = new ethers.providers.Web3Provider(wcProvider);
+      await provider.connect();
+      provider = new ethers.providers.Web3Provider(provider);
       const accounts = await provider.listAccounts();
       if (!accounts || accounts.length === 0) throw new Error("No accounts found.");
       signer = provider.getSigner();
