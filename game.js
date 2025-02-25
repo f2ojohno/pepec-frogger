@@ -20,96 +20,59 @@ function playJumpSound() {
   console.log("Jump sound triggered");
 }
 
-// ===== WALLET SETUP =====
+// ===== WALLET CONNECTION & TOKEN BALANCE CHECK =====
 let provider, signer, userAddress;
 
-// Wait for DOM to load before setting up event listeners
-document.addEventListener("DOMContentLoaded", () => {
-  // Coinbase Wallet Connection
-  async function connectCoinbaseWallet() {
-    try {
-      if (!window.CoinbaseWalletSDK) throw new Error("Coinbase Wallet SDK not loaded");
-      const CoinbaseWalletSDK = window.CoinbaseWalletSDK.default || window.CoinbaseWalletSDK; // Handle UMD default export
-      const coinbaseWallet = new CoinbaseWalletSDK({
-        appName: "Silver Robot Frog Game",
-        appChainIds: [BASE_CHAIN_ID]
-      });
-      provider = await coinbaseWallet.makeWeb3Provider("https://mainnet.base.org", BASE_CHAIN_ID);
-      const accounts = await provider.request({ method: "eth_requestAccounts" });
-      if (!accounts || accounts.length === 0) throw new Error("No accounts found.");
-      provider = new ethers.providers.Web3Provider(provider);
-      signer = provider.getSigner();
-      userAddress = await signer.getAddress();
-      console.log("Connected address via Coinbase:", userAddress);
-      await verifyNetworkAndProceed();
-    } catch (err) {
-      console.error("Coinbase Wallet connection error:", err);
-      document.getElementById("message").innerText = `Error: ${err.message || "Unknown error"}`;
-    }
+async function connectWallet() {
+  console.log("Starting connectWallet function...");
+  if (!window.ethereum) {
+    alert("Please install a Web3 wallet like MetaMask to play.");
+    document.getElementById("message").innerText = "No Web3 wallet detected.";
+    return;
   }
 
-  // WalletConnect v2 Connection (MetaMask, OKX, SafePal, Rainbow, Phantom, etc.)
-  async function connectWalletConnect() {
-    try {
-      if (!window.EthereumProvider) throw new Error("WalletConnect v2 not loaded");
-      const EthereumProvider = window.EthereumProvider.default || window.EthereumProvider; // Handle UMD default export
-      provider = await EthereumProvider.init({
-        projectId: "c33b868f6f83d97612bdfa07c7e3a3d6", // Public WalletConnect project ID or register your own at walletconnect.com
-        chains: [BASE_CHAIN_ID],
-        optionalChains: [BASE_CHAIN_ID],
-        rpcMap: { [BASE_CHAIN_ID]: "https://mainnet.base.org" },
-        showQrModal: true
-      });
-      await provider.connect();
-      provider = new ethers.providers.Web3Provider(provider);
-      const accounts = await provider.listAccounts();
-      if (!accounts || accounts.length === 0) throw new Error("No accounts found.");
-      signer = provider.getSigner();
-      userAddress = await signer.getAddress();
-      console.log("Connected address via WalletConnect:", userAddress);
-      await verifyNetworkAndProceed();
-    } catch (err) {
-      console.error("WalletConnect connection error:", err);
-      document.getElementById("message").innerText = `Error: ${err.message || "Unknown error"}`;
-    }
-  }
+  try {
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    const accounts = await provider.send("eth_requestAccounts", []);
+    if (!accounts || accounts.length === 0) throw new Error("No accounts found.");
+    signer = provider.getSigner();
+    userAddress = await signer.getAddress();
+    console.log("Connected address:", userAddress);
 
-  // Verify Network and Proceed
-  async function verifyNetworkAndProceed() {
     const network = await provider.getNetwork();
     console.log("Connected to network:", network.name, "Chain ID:", network.chainId);
     if (network.chainId !== BASE_CHAIN_ID) {
       try {
-        await provider.send("wallet_switchEthereumChain", [{ chainId: `0x${BASE_CHAIN_ID.toString(16)}` }]);
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: `0x${BASE_CHAIN_ID.toString(16)}` }],
+        });
       } catch (switchError) {
         if (switchError.code === 4902) {
-          await provider.send("wallet_addEthereumChain", [{
-            chainId: `0x${BASE_CHAIN_ID.toString(16)}`,
-            chainName: "Base Mainnet",
-            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-            rpcUrls: ["https://mainnet.base.org"],
-            blockExplorerUrls: ["https://basescan.org"]
-          }]);
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: `0x${BASE_CHAIN_ID.toString(16)}`,
+              chainName: "Base Mainnet",
+              nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+              rpcUrls: ["https://mainnet.base.org"],
+              blockExplorerUrls: ["https://basescan.org"]
+            }]
+          });
         } else {
           throw new Error("Please switch to Base network.");
         }
       }
     }
+
     document.getElementById("message").innerText = `Wallet connected: ${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
-    document.getElementById("walletModal").style.display = "none";
     await checkPepecBalance();
+  } catch (err) {
+    console.error("Wallet connection error:", err);
+    document.getElementById("message").innerText = `Error: ${err.message || "Unknown error"}`;
   }
+}
 
-  // Wallet Selection UI
-  document.getElementById("connectWalletBtn").addEventListener("click", () => {
-    document.getElementById("walletModal").style.display = "flex";
-  });
-
-  document.getElementById("coinbaseWalletBtn").addEventListener("click", connectCoinbaseWallet);
-  document.getElementById("walletConnectBtn").addEventListener("click", connectWalletConnect);
-});
-
-// ===== WALLET CONNECTION & TOKEN BALANCE CHECK =====
 async function checkPepecBalance() {
   try {
     if (!provider || !userAddress) throw new Error("Wallet not connected.");
@@ -143,6 +106,8 @@ async function checkPepecBalance() {
     }
   }
 }
+
+document.getElementById("connectWalletBtn").addEventListener("click", connectWallet);
 
 // ===== GAME SETUP =====
 const canvas = document.getElementById("gameCanvas");
