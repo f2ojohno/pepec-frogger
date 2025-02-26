@@ -1,17 +1,12 @@
-// api/.well-known/farcaster.json (as a serverless function)
-module.exports = async (req, res) => {
-  const manifest = {
-    frame: {
-      version: "1",
-      name: "PEPEC FROGGER",
-      homeUrl: "https://pepec-frogger.vercel.app/",
-      iconUrl: "https://pepec-frogger.vercel.app/favicon-32x32.png",
-      imageUrl: "https://pepec-frogger.vercel.app/silver_robot_frog.png",
-      buttonTitle: "Play Frogger",
-      splashImageUrl: "https://pepec-frogger.vercel.app/silver_robot_frog.png",
-      splashBackgroundColor: "#1a1a1a"
-    }
-  };
-  res.setHeader('Content-Type', 'application/json');
-  res.status(200).json(manifest);
-};
+{
+  "frame": {
+    "version": "1",
+    "name": "PEPEC FROGGER",
+    "homeUrl": "https://pepec-frogger.vercel.app/",
+    "iconUrl": "https://pepec-frogger.vercel.app/favicon-32x32.png",
+    "imageUrl": "https://pepec-frogger.vercel.app/silver_robot_frog.png",
+    "buttonTitle": "Play Frogger",
+    "splashImageUrl": "https://pepec-frogger.vercel.app/splash.png",
+    "splashBackgroundColor": "#1a1a1a"
+  }
+}
