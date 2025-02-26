@@ -1,4 +1,4 @@
-// game.js (With Wallet and Redraw Debug)
+// game.js (Reverted to Original Sizes)
 const REQUIRED_PEPEC_AMOUNT = "0";
 const TOKEN_DECIMALS = 18;
 const requiredBalance = ethers.utils.parseUnits(REQUIRED_PEPEC_AMOUNT, TOKEN_DECIMALS);
@@ -8,13 +8,6 @@ const BASE_CHAIN_ID = 8453;
 
 console.log("Configuration loaded.");
 console.log("Page loaded at:", window.location.href);
-
-// Frames wallet check simulation
-if (window.ethereum) {
-  console.log("Wallet provider detected:", window.ethereum.isMetaMask ? "MetaMask" : "Other");
-} else {
-  console.log("No wallet provider detected");
-}
 
 const backgroundMusicFiles = [
   "soundtrack/level1.mp3",
@@ -178,13 +171,6 @@ if (connectWalletBtn) {
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// Adjust canvas for Frames v2 (424x695px) if in Warpcast
-if (window.innerWidth <= 424) {
-  canvas.width = 424;
-  canvas.height = 695;
-  console.log("Adjusted canvas for Frames v2: 424x695");
-}
-
 const frogImg = new Image(); frogImg.src = "silver_robot_frog.png";
 const carImg = new Image(); carImg.src = "car.png";
 const car2Img = new Image(); car2Img.src = "car2.png";
@@ -229,11 +215,11 @@ let highScore = 0;
 let bushes = [];
 
 function drawBackground() {
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height / 6);
+  const gradient = ctx.createLinearGradient(0, 0, 0, 100);
   gradient.addColorStop(0, "#87CEEB");
   gradient.addColorStop(1, "#B0E0E6");
   ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height / 6);
+  ctx.fillRect(0, 0, canvas.width, 100);
 }
 
 function generateBushes() {
@@ -241,7 +227,7 @@ function generateBushes() {
   for (let i = 0; i < 8; i++) {
     bushes.push({
       x: Math.random() * canvas.width,
-      y: Math.random() > 0.5 ? Math.random() * (canvas.height / 6 - 40) : (5 * canvas.height / 6) + Math.random() * (canvas.height / 6 - 40),
+      y: Math.random() > 0.5 ? Math.random() * 80 : 520 + Math.random() * 80,
       width: 40,
       height: 40
     });
@@ -249,12 +235,12 @@ function generateBushes() {
 }
 
 function drawGrassAndBushes() {
-  const grassGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  const grassGradient = ctx.createLinearGradient(0, 0, 0, 600);
   grassGradient.addColorStop(0, "#4CAF50");
   grassGradient.addColorStop(1, "#388E3C");
   ctx.fillStyle = grassGradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height / 6);
-  ctx.fillRect(0, 5 * canvas.height / 6, canvas.width, canvas.height / 6);
+  ctx.fillRect(0, 0, canvas.width, 100);
+  ctx.fillRect(0, 500, canvas.width, 100);
 
   bushes.forEach(bush => {
     ctx.shadowBlur = 5;
@@ -266,14 +252,14 @@ function drawGrassAndBushes() {
 
 function drawRoad() {
   ctx.fillStyle = "#808080";
-  ctx.fillRect(0, canvas.height / 6, canvas.width, canvas.height / 30);
-  ctx.fillRect(0, 5 * canvas.height / 6 - canvas.height / 30, canvas.width, canvas.height / 30);
+  ctx.fillRect(0, 100, canvas.width, 20);
+  ctx.fillRect(0, 480, canvas.width, 20);
   ctx.fillStyle = "#616161";
-  ctx.fillRect(0, canvas.height / 6 + canvas.height / 30, canvas.width, 4 * canvas.height / 6 - 2 * canvas.height / 30);
+  ctx.fillRect(0, 120, canvas.width, 360);
   ctx.strokeStyle = "#FFD700";
   ctx.lineWidth = 3;
   ctx.setLineDash([20, 15]);
-  for (let laneY = canvas.height / 6 + 50; laneY < 5 * canvas.height / 6 - 50; laneY += 50) {
+  for (let laneY = 170; laneY < 470; laneY += 50) {
     ctx.beginPath();
     ctx.moveTo(0, laneY);
     ctx.lineTo(canvas.width, laneY);
@@ -283,17 +269,15 @@ function drawRoad() {
 }
 
 function resetGame() {
-  frog = { x: canvas.width / 2 - 25, y: 5 * canvas.height / 6 - 50, width: 50, height: 50 };
+  frog = { x: 375, y: 550, width: 50, height: 50 };
   score = 0;
   level = 1;
   gameOver = false;
-  highestY = 5 * canvas.height / 6 - 50;
+  highestY = 550;
   generateBushes();
   initObstacles();
   updateBackgroundMusic(level);
   updateUI();
-  console.log("Game reset, forcing redraw...");
-  gameLoop(); // Force initial draw
 }
 
 function initObstacles() {
@@ -301,7 +285,7 @@ function initObstacles() {
   const numCars = 2 + (level - 1) * 2;
   const minSpeed = 2.5 + (level - 1) * 0.5;
   for (let i = 0; i < numCars; i++) {
-    let laneY = canvas.height / 6 + (i % 8) * 50;
+    let laneY = 120 + (i % 8) * 50;
     let speed = (Math.random() * 1 + minSpeed) * (Math.random() > 0.5 ? 1 : -1);
     obstacles.push({
       x: speed > 0 ? -60 : canvas.width,
@@ -338,12 +322,13 @@ async function startGame() {
     console.log("Hiding login container");
     document.getElementById("login").style.display = "none";
     document.getElementById("login").style.opacity = "1";
-    resetGame(); // Redraw immediately
   }, 300);
+  resetGame();
   if (currentBackgroundMusic) {
     currentBackgroundMusic.play().catch(err => console.error("Error playing background music:", err));
   }
   console.log("Starting game loop...");
+  requestAnimationFrame(gameLoop);
 }
 
 function gameLoop() {
@@ -424,7 +409,7 @@ canvas.addEventListener("touchmove", (e) => {
       lastTouchMove = now;
     }
   }
-  if (frog.y <= canvas.height / 12) levelUp();
+  if (frog.y <= 50) levelUp();
   updateUI();
   touchStartX = touch.clientX;
   touchStartY = touch.clientY;
@@ -457,7 +442,7 @@ document.addEventListener("keydown", (e) => {
       if (frog.x > canvas.width - frog.width) frog.x = canvas.width - frog.width;
       break;
   }
-  if (frog.y <= canvas.height / 12) levelUp();
+  if (frog.y <= 50) levelUp();
   updateUI();
 });
 
@@ -465,8 +450,8 @@ function levelUp() {
   level++;
   score += 100;
   document.getElementById("message").innerText = `Level ${level}!`;
-  frog.y = 5 * canvas.height / 6 - 50;
-  highestY = 5 * canvas.height / 6 - 50;
+  frog.y = 550;
+  highestY = 550;
   initObstacles();
   updateBackgroundMusic(level);
   updateUI();
