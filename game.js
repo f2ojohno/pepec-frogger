@@ -59,14 +59,16 @@ function updateBackgroundMusic(level) {
 let provider, signer, userAddress;
 
 async function connectWallet() {
-  console.log("Starting connectWallet function...");
+  console.log("connectWallet function triggered");
   if (!window.ethereum) {
+    console.log("No Web3 wallet detected");
     alert("Please install a Web3 wallet like MetaMask to play.");
     document.getElementById("message").innerText = "No Web3 wallet detected.";
     return;
   }
 
   try {
+    console.log("Requesting accounts...");
     provider = new ethers.providers.Web3Provider(window.ethereum);
     const accounts = await provider.send("eth_requestAccounts", []);
     if (!accounts || accounts.length === 0) throw new Error("No accounts found.");
@@ -77,6 +79,7 @@ async function connectWallet() {
     const network = await provider.getNetwork();
     console.log("Connected to network:", network.name, "Chain ID:", network.chainId);
     if (network.chainId !== BASE_CHAIN_ID) {
+      console.log("Switching to Base network...");
       try {
         await window.ethereum.request({
           method: "wallet_switchEthereumChain",
@@ -84,6 +87,7 @@ async function connectWallet() {
         });
       } catch (switchError) {
         if (switchError.code === 4902) {
+          console.log("Adding Base network...");
           await window.ethereum.request({
             method: "wallet_addEthereumChain",
             params: [{
@@ -101,6 +105,7 @@ async function connectWallet() {
     }
 
     document.getElementById("message").innerText = `Wallet connected: ${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
+    console.log("Calling checkPepecBalance...");
     await checkPepecBalance();
   } catch (err) {
     console.error("Wallet connection error:", err);
@@ -110,10 +115,17 @@ async function connectWallet() {
 
 async function checkPepecBalance() {
   try {
-    if (!provider || !userAddress) throw new Error("Wallet not connected.");
+    console.log("checkPepecBalance started");
+    if (!provider || !userAddress) {
+      console.log("Wallet not connected");
+      throw new Error("Wallet not connected.");
+    }
     const network = await provider.getNetwork();
-    console.log("Connected to network:", network.name, "Chain ID:", network.chainId);
-    if (network.chainId !== BASE_CHAIN_ID) throw new Error("Wallet not on Base network (chain ID 8453).");
+    console.log("Network check:", network.name, "Chain ID:", network.chainId);
+    if (network.chainId !== BASE_CHAIN_ID) {
+      console.log("Wrong network detected");
+      throw new Error("Wallet not on Base network (chain ID 8453).");
+    }
 
     const contract = new ethers.Contract(pepecContractAddress, pepecABI, provider);
     console.log("Checking balance for:", userAddress);
@@ -122,27 +134,38 @@ async function checkPepecBalance() {
     console.log("Balance:", formattedBalance, "$PEPEC");
 
     if (balance.lt(requiredBalance)) {
+      console.log("Insufficient balance:", formattedBalance, "<", REQUIRED_PEPEC_AMOUNT);
       document.getElementById("message").innerText = `Insufficient $PEPEC (${formattedBalance} < ${REQUIRED_PEPEC_AMOUNT})`;
     } else {
+      console.log("Balance sufficient, starting game...");
       document.getElementById("message").innerText = `Balance verified (${formattedBalance} $PEPEC) – Starting game!`;
       await checkImagesLoaded();
+      console.log("Images loaded, calling startGame...");
       startGame();
       loadLeaderboard();
     }
   } catch (err) {
-    console.error("Error checking balance:", err);
+    console.error("Error in checkPepecBalance:", err);
     document.getElementById("message").innerText = `Error checking balance: ${err.reason || err.message || "Contract call failed"}`;
     if (err.code === "CALL_EXCEPTION") {
-      console.log("Contract call reverted. Starting game in test mode...");
+      console.log("Contract call reverted, starting in test mode...");
       document.getElementById("message").innerText = "Balance check failed – Starting game anyway (test mode)";
       await checkImagesLoaded();
+      console.log("Images loaded in test mode, calling startGame...");
       startGame();
       loadLeaderboard();
     }
   }
 }
 
-document.getElementById("connectWalletBtn").addEventListener("click", connectWallet);
+console.log("Binding Wallet Connect button...");
+const connectWalletBtn = document.getElementById("connectWalletBtn");
+if (connectWalletBtn) {
+  console.log("Button found, adding event listener...");
+  connectWalletBtn.addEventListener("click", connectWallet);
+} else {
+  console.error("Wallet Connect button not found in DOM!");
+}
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -156,12 +179,25 @@ const carImages = [carImg, car2Img, car3Img];
 
 async function checkImagesLoaded() {
   const images = [frogImg, carImg, car2Img, car3Img, bushImg];
+  console.log("Checking image load status...");
   await Promise.all(images.map(img => 
     new Promise((resolve, reject) => {
-      if (img.complete && img.naturalWidth) resolve();
-      else { img.onload = resolve; img.onerror = reject; }
+      if (img.complete && img.naturalWidth) {
+        console.log(`Image loaded: ${img.src}`);
+        resolve();
+      } else {
+        img.onload = () => {
+          console.log(`Image loaded: ${img.src}`);
+          resolve();
+        };
+        img.onerror = () => {
+          console.error(`Image failed to load: ${img.src}`);
+          reject();
+        };
+      }
     })
   ));
+  console.log("All images loaded successfully");
 }
 
 let frog, obstacles, score, level, gameOver, highestY;
@@ -270,8 +306,10 @@ function updateUI() {
 }
 
 async function startGame() {
+  console.log("startGame triggered");
   document.getElementById("login").style.opacity = "0";
   setTimeout(() => {
+    console.log("Hiding login container");
     document.getElementById("login").style.display = "none";
     document.getElementById("login").style.opacity = "1";
   }, 300);
@@ -279,11 +317,15 @@ async function startGame() {
   if (currentBackgroundMusic) {
     currentBackgroundMusic.play().catch(err => console.error("Error playing background music:", err));
   }
+  console.log("Starting game loop...");
   requestAnimationFrame(gameLoop);
 }
 
 function gameLoop() {
-  if (gameOver) return;
+  if (gameOver) {
+    console.log("Game over, exiting loop");
+    return;
+  }
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBackground();
   drawGrassAndBushes();
