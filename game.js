@@ -1,28 +1,26 @@
-// ===== CONFIGURATION =====
-const REQUIRED_PEPEC_AMOUNT = "0"; // For testing, adjust for production
+// game.js
+const REQUIRED_PEPEC_AMOUNT = "0";
 const TOKEN_DECIMALS = 18;
 const requiredBalance = ethers.utils.parseUnits(REQUIRED_PEPEC_AMOUNT, TOKEN_DECIMALS);
 const pepecContractAddress = "0x1196c6704789620514fD25632aBe15F69a50bc4f";
 const pepecABI = ["function balanceOf(address owner) view returns (uint256)"];
-const BASE_CHAIN_ID = 8453; // Base L2 Mainnet chain ID
+const BASE_CHAIN_ID = 8453;
 
 console.log("Configuration loaded.");
 
-// ===== AUDIO SETUP =====
 const backgroundMusicFiles = [
-  "soundtrack/level1.mp3",  // Level 1
-  "soundtrack/level2.mp3",  // Level 2
-  "soundtrack/level3.mp3",  // Level 3
-  "soundtrack/level4.mp3",  // Level 4
-  "soundtrack/level5.mp3",  // Level 5
-  "soundtrack/level6.mp3",  // Level 6
-  "soundtrack/level7.mp3",  // Level 7
-  "soundtrack/level8.mp3"   // Level 8
+  "soundtrack/level1.mp3",
+  "soundtrack/level2.mp3",
+  "soundtrack/level3.mp3",
+  "soundtrack/level4.mp3",
+  "soundtrack/level5.mp3",
+  "soundtrack/level6.mp3",
+  "soundtrack/level7.mp3",
+  "soundtrack/level8.mp3"
 ];
 let currentBackgroundMusic = null;
 const preloadedAudio = {};
 
-// Preload all audio files
 function preloadAudio() {
   backgroundMusicFiles.forEach((file, index) => {
     const src = window.location.origin + "/" + file;
@@ -33,15 +31,12 @@ function preloadAudio() {
     console.log("Preloading audio:", src);
   });
 }
-preloadAudio(); // Call immediately
+preloadAudio();
 
-// Function to switch background music based on level
 function updateBackgroundMusic(level) {
   const musicIndex = Math.min(level - 1, backgroundMusicFiles.length - 1);
-  const newSrc = window.location.origin + "/" + backgroundMusicFiles[musicIndex]; // Full URL
-  
+  const newSrc = window.location.origin + "/" + backgroundMusicFiles[musicIndex];
   console.log("Attempting to switch music for Level", level, "to", newSrc);
-  
   if (!currentBackgroundMusic || currentBackgroundMusic.src !== newSrc) {
     if (currentBackgroundMusic) {
       console.log("Pausing current music:", currentBackgroundMusic.src);
@@ -54,14 +49,13 @@ function updateBackgroundMusic(level) {
       .then(() => console.log("Music playing successfully:", newSrc))
       .catch(err => {
         console.error("Error playing background music:", err);
-        currentBackgroundMusic = null; // Reset if unplayable
+        currentBackgroundMusic = null;
       });
   } else {
     console.log("Music unchanged, already playing:", newSrc);
   }
 }
 
-// ===== WALLET CONNECTION & TOKEN BALANCE CHECK =====
 let provider, signer, userAddress;
 
 async function connectWallet() {
@@ -150,14 +144,13 @@ async function checkPepecBalance() {
 
 document.getElementById("connectWalletBtn").addEventListener("click", connectWallet);
 
-// ===== GAME SETUP =====
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 const frogImg = new Image(); frogImg.src = "silver_robot_frog.png";
 const carImg = new Image(); carImg.src = "car.png";
-const car2Img = new Image(); car2Img.src = "car2.png";
-const car3Img = new Image(); car3Img.src = "car3.png";
+const car2Img = new Image(); carImg.src = "car2.png";
+const car3Img = new Image(); carImg.src = "car3.png";
 const bushImg = new Image(); bushImg.src = "bush.png";
 const carImages = [carImg, car2Img, car3Img];
 
@@ -171,7 +164,6 @@ async function checkImagesLoaded() {
   ));
 }
 
-// ===== GAME VARIABLES =====
 let frog, obstacles, score, level, gameOver, highestY;
 let highScore = 0;
 let bushes = [];
@@ -321,7 +313,6 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// Movement Controls
 const step = 15;
 let touchStartX = null, touchStartY = null;
 let lastTouchMove = 0;
@@ -337,14 +328,11 @@ canvas.addEventListener("touchstart", (e) => {
 canvas.addEventListener("touchmove", (e) => {
   e.preventDefault();
   if (gameOver || !touchStartX || !touchStartY) return;
-
   const now = Date.now();
   if (now - lastTouchMove < 50) return;
-
   const touch = e.touches[0];
   const deltaX = touch.clientX - touchStartX;
   const deltaY = touch.clientY - touchStartY;
-
   if (Math.abs(deltaX) > Math.abs(deltaY)) {
     if (deltaX > 20) {
       frog.x += step;
@@ -368,7 +356,6 @@ canvas.addEventListener("touchmove", (e) => {
       lastTouchMove = now;
     }
   }
-
   if (frog.y <= 50) levelUp();
   updateUI();
   touchStartX = touch.clientX;
@@ -432,7 +419,6 @@ function handleGameOver() {
   }, 100);
 }
 
-// Updated Leaderboard Functions for Vercel API
 async function submitScore(finalScore) {
   try {
     const response = await fetch('/api/leaderboard', {
