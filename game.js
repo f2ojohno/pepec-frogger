@@ -1,4 +1,3 @@
-// game.js
 // ===== CONFIGURATION =====
 const REQUIRED_PEPEC_AMOUNT = "0"; // For testing, adjust for production
 const TOKEN_DECIMALS = 18;
@@ -10,19 +9,25 @@ const BASE_CHAIN_ID = 8453; // Base L2 Mainnet chain ID
 console.log("Configuration loaded.");
 
 // ===== AUDIO SETUP =====
-const backgroundMusic = new Audio("background_music.mp3");
-backgroundMusic.loop = true;
-backgroundMusic.volume = 0.5;
+const backgroundMusicFiles = [
+  "soundtrack/level1.mp3",  // Level 1
+  "soundtrack/level2.mp3",  // Level 2
+  "soundtrack/level3.mp3"   // Level 3 and beyond (add more as needed)
+];
+let currentBackgroundMusic = new Audio(backgroundMusicFiles[0]);
+currentBackgroundMusic.loop = true;
+currentBackgroundMusic.volume = 0.5;
 
-// Preload jump sound as a single instance
-const jumpSound = new Audio("jump_sound.mp3");
-jumpSound.volume = 0.7;
-jumpSound.preload = "auto"; // Preload to reduce initial lag
-
-function playJumpSound() {
-  jumpSound.currentTime = 0; // Rewind to start
-  jumpSound.play().catch(err => console.error("Error playing jump sound:", err));
-  console.log("Jump sound triggered");
+// Function to switch background music based on level
+function updateBackgroundMusic(level) {
+  const musicIndex = Math.min(level - 1, backgroundMusicFiles.length - 1); // Cap at last file
+  if (currentBackgroundMusic.src !== backgroundMusicFiles[musicIndex]) {
+    currentBackgroundMusic.pause();
+    currentBackgroundMusic = new Audio(backgroundMusicFiles[musicIndex]);
+    currentBackgroundMusic.loop = true;
+    currentBackgroundMusic.volume = 0.5;
+    currentBackgroundMusic.play().catch(err => console.error("Error playing background music:", err));
+  }
 }
 
 // ===== WALLET CONNECTION & TOKEN BALANCE CHECK =====
@@ -202,6 +207,7 @@ function resetGame() {
   highestY = 550;
   generateBushes();
   initObstacles();
+  updateBackgroundMusic(level);
   updateUI();
 }
 
@@ -247,7 +253,7 @@ async function startGame() {
     document.getElementById("login").style.opacity = "1";
   }, 300);
   resetGame();
-  backgroundMusic.play().catch(err => console.error("Error playing background music:", err));
+  currentBackgroundMusic.play().catch(err => console.error("Error playing background music:", err));
   requestAnimationFrame(gameLoop);
 }
 
@@ -310,12 +316,10 @@ canvas.addEventListener("touchmove", (e) => {
     if (deltaX > 20) {
       frog.x += step;
       if (frog.x > canvas.width - frog.width) frog.x = canvas.width - frog.width;
-      playJumpSound();
       lastTouchMove = now;
     } else if (deltaX < -20) {
       frog.x -= step;
       if (frog.x < 0) frog.x = 0;
-      playJumpSound();
       lastTouchMove = now;
     }
   } else {
@@ -325,11 +329,9 @@ canvas.addEventListener("touchmove", (e) => {
         score += 10;
         highestY = frog.y;
       }
-      playJumpSound();
       lastTouchMove = now;
     } else if (deltaY > 20) {
       frog.y += step;
-      playJumpSound();
       lastTouchMove = now;
     }
   }
@@ -354,21 +356,17 @@ document.addEventListener("keydown", (e) => {
         score += 10;
         highestY = frog.y;
       }
-      playJumpSound();
       break;
     case "ArrowDown":
       frog.y += step;
-      playJumpSound();
       break;
     case "ArrowLeft":
       frog.x -= step;
       if (frog.x < 0) frog.x = 0;
-      playJumpSound();
       break;
     case "ArrowRight":
       frog.x += step;
       if (frog.x > canvas.width - frog.width) frog.x = canvas.width - frog.width;
-      playJumpSound();
       break;
   }
   if (frog.y <= 50) levelUp();
@@ -382,13 +380,14 @@ function levelUp() {
   frog.y = 550;
   highestY = 550;
   initObstacles();
+  updateBackgroundMusic(level);
   updateUI();
 }
 
 function handleGameOver() {
   gameOver = true;
-  backgroundMusic.pause();
-  backgroundMusic.currentTime = 0;
+  currentBackgroundMusic.pause();
+  currentBackgroundMusic.currentTime = 0;
   document.getElementById("message").innerText = `Game Over! Score: ${score}`;
   if (score > highScore) highScore = score;
   submitScore(score);
