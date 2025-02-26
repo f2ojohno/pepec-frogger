@@ -1,4 +1,4 @@
-// game.js
+// game.js (Working Version with Debug)
 const REQUIRED_PEPEC_AMOUNT = "0";
 const TOKEN_DECIMALS = 18;
 const requiredBalance = ethers.utils.parseUnits(REQUIRED_PEPEC_AMOUNT, TOKEN_DECIMALS);
@@ -7,6 +7,7 @@ const pepecABI = ["function balanceOf(address owner) view returns (uint256)"];
 const BASE_CHAIN_ID = 8453;
 
 console.log("Configuration loaded.");
+console.log("Page loaded at:", window.location.href); // Debug Frames launch
 
 const backgroundMusicFiles = [
   "soundtrack/level1.mp3",
@@ -172,8 +173,8 @@ const ctx = canvas.getContext("2d");
 
 const frogImg = new Image(); frogImg.src = "silver_robot_frog.png";
 const carImg = new Image(); carImg.src = "car.png";
-const car2Img = new Image(); car2Img.src = "car2.png"; // Fixed typo
-const car3Img = new Image(); car3Img.src = "car3.png"; // Fixed typo
+const car2Img = new Image(); car2Img.src = "car2.png";
+const car3Img = new Image(); car3Img.src = "car3.png";
 const bushImg = new Image(); bushImg.src = "bush.png";
 const carImages = [carImg, car2Img, car3Img];
 
@@ -192,18 +193,17 @@ async function checkImagesLoaded() {
         };
         img.onerror = () => {
           console.error(`Image failed to load: ${img.src}`);
-          resolve(); // Resolve anyway to prevent hanging
+          reject();
         };
       }
     })
   );
 
-  // Add a timeout to ensure it doesn’t hang indefinitely
   const timeoutPromise = new Promise(resolve => {
     setTimeout(() => {
       console.log("Image loading timeout reached, proceeding anyway...");
       resolve();
-    }, 5000); // 5-second timeout
+    }, 5000);
   });
 
   await Promise.race([Promise.all(loadPromises), timeoutPromise]);
