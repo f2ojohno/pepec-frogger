@@ -12,21 +12,32 @@ console.log("Configuration loaded.");
 const backgroundMusicFiles = [
   "soundtrack/level1.mp3",  // Level 1
   "soundtrack/level2.mp3",  // Level 2
-  "soundtrack/level3.mp3"   // Level 3 and beyond (add more as needed)
+  "soundtrack/level3.mp3",  // Level 3
+  "soundtrack/level4.mp3",  // Level 4
+  "soundtrack/level5.mp3",  // Level 5
+  "soundtrack/level6.mp3",  // Level 6
+  "soundtrack/level7.mp3",  // Level 7
+  "soundtrack/level8.mp3"   // Level 8
 ];
-let currentBackgroundMusic = new Audio(backgroundMusicFiles[0]);
-currentBackgroundMusic.loop = true;
-currentBackgroundMusic.volume = 0.5;
+let currentBackgroundMusic = null; // Start with no audio until loaded
 
 // Function to switch background music based on level
 function updateBackgroundMusic(level) {
-  const musicIndex = Math.min(level - 1, backgroundMusicFiles.length - 1); // Cap at last file
-  if (currentBackgroundMusic.src !== backgroundMusicFiles[musicIndex]) {
-    currentBackgroundMusic.pause();
-    currentBackgroundMusic = new Audio(backgroundMusicFiles[musicIndex]);
+  const musicIndex = Math.min(level - 1, backgroundMusicFiles.length - 1);
+  const newSrc = window.location.origin + "/" + backgroundMusicFiles[musicIndex]; // Full URL
+  
+  if (!currentBackgroundMusic || currentBackgroundMusic.src !== newSrc) {
+    if (currentBackgroundMusic) {
+      currentBackgroundMusic.pause();
+      currentBackgroundMusic.currentTime = 0;
+    }
+    currentBackgroundMusic = new Audio(newSrc);
     currentBackgroundMusic.loop = true;
     currentBackgroundMusic.volume = 0.5;
-    currentBackgroundMusic.play().catch(err => console.error("Error playing background music:", err));
+    currentBackgroundMusic.play().catch(err => {
+      console.error("Error playing background music:", err);
+      currentBackgroundMusic = null; // Reset if unplayable
+    });
   }
 }
 
@@ -253,7 +264,9 @@ async function startGame() {
     document.getElementById("login").style.opacity = "1";
   }, 300);
   resetGame();
-  currentBackgroundMusic.play().catch(err => console.error("Error playing background music:", err));
+  if (currentBackgroundMusic) {
+    currentBackgroundMusic.play().catch(err => console.error("Error playing background music:", err));
+  }
   requestAnimationFrame(gameLoop);
 }
 
@@ -386,8 +399,10 @@ function levelUp() {
 
 function handleGameOver() {
   gameOver = true;
-  currentBackgroundMusic.pause();
-  currentBackgroundMusic.currentTime = 0;
+  if (currentBackgroundMusic) {
+    currentBackgroundMusic.pause();
+    currentBackgroundMusic.currentTime = 0;
+  }
   document.getElementById("message").innerText = `Game Over! Score: ${score}`;
   if (score > highScore) highScore = score;
   submitScore(score);
