@@ -172,15 +172,15 @@ const ctx = canvas.getContext("2d");
 
 const frogImg = new Image(); frogImg.src = "silver_robot_frog.png";
 const carImg = new Image(); carImg.src = "car.png";
-const car2Img = new Image(); carImg.src = "car2.png";
-const car3Img = new Image(); carImg.src = "car3.png";
+const car2Img = new Image(); car2Img.src = "car2.png"; // Fixed typo
+const car3Img = new Image(); car3Img.src = "car3.png"; // Fixed typo
 const bushImg = new Image(); bushImg.src = "bush.png";
 const carImages = [carImg, car2Img, car3Img];
 
 async function checkImagesLoaded() {
   const images = [frogImg, carImg, car2Img, car3Img, bushImg];
   console.log("Checking image load status...");
-  await Promise.all(images.map(img => 
+  const loadPromises = images.map(img => 
     new Promise((resolve, reject) => {
       if (img.complete && img.naturalWidth) {
         console.log(`Image loaded: ${img.src}`);
@@ -192,12 +192,22 @@ async function checkImagesLoaded() {
         };
         img.onerror = () => {
           console.error(`Image failed to load: ${img.src}`);
-          reject();
+          resolve(); // Resolve anyway to prevent hanging
         };
       }
     })
-  ));
-  console.log("All images loaded successfully");
+  );
+
+  // Add a timeout to ensure it doesn’t hang indefinitely
+  const timeoutPromise = new Promise(resolve => {
+    setTimeout(() => {
+      console.log("Image loading timeout reached, proceeding anyway...");
+      resolve();
+    }, 5000); // 5-second timeout
+  });
+
+  await Promise.race([Promise.all(loadPromises), timeoutPromise]);
+  console.log("All images processed (loaded or timed out)");
 }
 
 let frog, obstacles, score, level, gameOver, highestY;
