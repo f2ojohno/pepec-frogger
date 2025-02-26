@@ -12,18 +12,17 @@
   <meta property="og:image" content="https://pepec-frogger.vercel.app/silver_robot_frog.png" />
   <meta property="og:url" content="https://pepec-frogger.vercel.app/" />
 
-  <!-- Warpcast Frame Meta Tags -->
-  <meta name="fc:frame" content="vNext" />
-  <meta name="fc:frame:image" content="https://pepec-frogger.vercel.app/silver_robot_frog.png" />
-  <meta name="fc:frame:button:1" content="Jump (Score: 0)" />
-  <meta name="fc:frame:button:1:action" content="post" />
-  <meta name="fc:frame:post_url" content="https://pepec-frogger.vercel.app/api/frame" />
+  <!-- Frames v2 Meta Tags -->
+  <meta name="farcaster:frame:embed" content="v2" />
+  <meta name="farcaster:frame:embed:src" content="https://pepec-frogger.vercel.app/" />
+  <meta name="farcaster:frame:embed:width" content="800" />
+  <meta name="farcaster:frame:embed:height" content="600" />
+  <meta name="farcaster:frame:embed:manifest" content="https://pepec-frogger.vercel.app/api/frame-manifest" />
 
-  <!-- CSP: Allow inline styles and necessary external resources -->
+  <!-- CSP -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://pepec-frogger.vercel.app; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://pepec-frogger.vercel.app https://warpcast.com; frame-ancestors 'self' https://warpcast.com https://*.warpcast.com;">
 
   <style>
-    /* Base Styles with Arcade Twist */
     body {
       margin: 0;
       padding: 0;
@@ -37,7 +36,6 @@
       line-height: 1.6;
       overflow-y: auto;
     }
-
     .arcade-machine {
       width: 900px;
       max-width: 100%;
@@ -49,7 +47,6 @@
       overflow: hidden;
       padding-bottom: 20px;
     }
-
     header {
       background: #ff00ff;
       padding: 20px;
@@ -58,13 +55,11 @@
       border-bottom: 5px solid #00ffff;
       box-shadow: 0 0 15px #ff00ff;
     }
-
     h1 {
       margin: 0;
       font-size: 1.5em;
       animation: flicker 2s infinite;
     }
-
     .game-container {
       max-width: 800px;
       margin: 20px auto;
@@ -75,7 +70,6 @@
       border-radius: 10px;
       box-shadow: inset 0 0 15px #fff;
     }
-
     #gameCanvas {
       border: 2px solid #333;
       background: #111;
@@ -87,7 +81,6 @@
       margin: 0 auto;
       touch-action: none;
     }
-
     #game-ui {
       position: absolute;
       top: 5px;
@@ -100,12 +93,10 @@
       z-index: 10;
       text-shadow: 0 0 5px #ff00ff;
     }
-
     #score, #highScore, #level {
       margin: 3px 0;
       font-weight: bold;
     }
-
     .login-container {
       position: absolute;
       top: 50%;
@@ -113,11 +104,9 @@
       transform: translate(-50%, -50%);
       transition: opacity 0.3s ease;
     }
-
     .login-container.hidden {
       opacity: 0;
     }
-
     #connectWalletBtn {
       padding: 10px 20px;
       font-size: 1em;
@@ -130,17 +119,14 @@
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2), 0 0 10px #00ffff;
       font-family: 'Press Start 2P', 'Arial', sans-serif;
     }
-
     #connectWalletBtn:hover {
       background: #ffd700;
       transform: translateY(-2px);
       box-shadow: 0 0 15px #ffd700;
     }
-
     #connectWalletBtn:active {
       transform: translateY(0);
     }
-
     .message {
       max-width: 800px;
       margin: 10px auto;
@@ -153,7 +139,6 @@
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       text-shadow: 0 0 5px #ff00ff;
     }
-
     .leaderboard {
       max-width: 800px;
       margin: 20px auto;
@@ -164,14 +149,12 @@
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 0 10px #00ffff;
       color: #fff;
     }
-
     .leaderboard h3 {
       margin: 0 0 10px;
       color: #ffd700;
       font-size: 1.2em;
       text-shadow: 0 0 5px #ff00ff;
     }
-
     .leaderboard-list {
       list-style: none;
       padding: 0;
@@ -179,17 +162,13 @@
       font-size: 0.9em;
       color: #00ffff;
     }
-
     .leaderboard-list li {
       padding: 5px;
       border-bottom: 1px solid #555;
     }
-
     .leaderboard-list li:last-child {
       border-bottom: none;
     }
-
-    /* CRT Scanlines */
     .game-container::before {
       content: '';
       position: absolute;
@@ -197,51 +176,22 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: repeating-linear-gradient(
-        transparent 0%,
-        rgba(255, 255, 255, 0.05) 1%,
-        transparent 2%
-      );
+      background: repeating-linear-gradient(transparent 0%, rgba(255, 255, 255, 0.05) 1%, transparent 2%);
       pointer-events: none;
       z-index: 1;
     }
-
-    /* Flicker Animation */
     @keyframes flicker {
       0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
       20%, 24%, 55% { opacity: 0.7; }
     }
-
-    /* Responsive Design */
     @media (max-width: 800px) {
-      .arcade-machine {
-        width: 100%;
-        border-width: 5px;
-      }
-      .game-container {
-        max-width: 100%;
-        height: 50vh;
-        margin: 10px auto;
-      }
-      #gameCanvas {
-        width: 100%;
-        height: 100%;
-      }
-      #game-ui {
-        font-size: 0.8em;
-        padding: 3px;
-      }
-      header h1 {
-        font-size: 1.2em;
-      }
-      .message, .leaderboard {
-        max-width: 100%;
-        margin: 10px auto;
-        font-size: 0.8em;
-      }
+      .arcade-machine { width: 100%; border-width: 5px; }
+      .game-container { max-width: 100%; height: 50vh; margin: 10px auto; }
+      #gameCanvas { width: 100%; height: 100%; }
+      #game-ui { font-size: 0.8em; padding: 3px; }
+      header h1 { font-size: 1.2em; }
+      .message, .leaderboard { max-width: 100%; margin: 10px auto; font-size: 0.8em; }
     }
-
-    /* Load Retro Font */
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
   </style>
 </head>
