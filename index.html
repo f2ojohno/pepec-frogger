@@ -17,9 +17,11 @@
   <meta name="fc:frame:image" content="https://pepec-frogger.vercel.app/silver_robot_frog.png" />
   <meta name="fc:frame:button:1" content="Play Now" />
   <meta name="fc:frame:button:1:action" content="post_redirect" />
+  <meta name="fc:frame:button:1:target" content="https://pepec-frogger.vercel.app/" />
   <meta name="fc:frame:post_url" content="https://pepec-frogger.vercel.app/api/frame" />
 
-  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://warpcast.com https://*.warpcast.com;">
+  <!-- Relaxed CSP to allow Warpcast -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://pepec-frogger.vercel.app; frame-ancestors 'self' https://warpcast.com https://*.warpcast.com; connect-src 'self' https://pepec-frogger.vercel.app https://warpcast.com; script-src 'self' https://cdn.jsdelivr.net;">
 
   <style>
     /* Base Styles with Arcade Twist */
