@@ -1,4 +1,3 @@
-// game.js (Reverted to Original Sizes)
 const REQUIRED_PEPEC_AMOUNT = "0";
 const TOKEN_DECIMALS = 18;
 const requiredBalance = ethers.utils.parseUnits(REQUIRED_PEPEC_AMOUNT, TOKEN_DECIMALS);
@@ -10,21 +9,21 @@ console.log("Configuration loaded.");
 console.log("Page loaded at:", window.location.href);
 
 const backgroundMusicFiles = [
-  "soundtrack/level1.mp3",
-  "soundtrack/level2.mp3",
-  "soundtrack/level3.mp3",
-  "soundtrack/level4.mp3",
-  "soundtrack/level5.mp3",
-  "soundtrack/level6.mp3",
-  "soundtrack/level7.mp3",
-  "soundtrack/level8.mp3"
+  "/soundtrack/level1.mp3",
+  "/soundtrack/level2.mp3",
+  "/soundtrack/level3.mp3",
+  "/soundtrack/level4.mp3",
+  "/soundtrack/level5.mp3",
+  "/soundtrack/level6.mp3",
+  "/soundtrack/level7.mp3",
+  "/soundtrack/level8.mp3"
 ];
 let currentBackgroundMusic = null;
 const preloadedAudio = {};
 
 function preloadAudio() {
   backgroundMusicFiles.forEach((file, index) => {
-    const src = window.location.origin + "/" + file;
+    const src = window.location.origin + file;
     preloadedAudio[index] = new Audio(src);
     preloadedAudio[index].loop = true;
     preloadedAudio[index].volume = 0.5;
@@ -36,7 +35,7 @@ preloadAudio();
 
 function updateBackgroundMusic(level) {
   const musicIndex = Math.min(level - 1, backgroundMusicFiles.length - 1);
-  const newSrc = window.location.origin + "/" + backgroundMusicFiles[musicIndex];
+  const newSrc = window.location.origin + backgroundMusicFiles[musicIndex];
   console.log("Attempting to switch music for Level", level, "to", newSrc);
   if (!currentBackgroundMusic || currentBackgroundMusic.src !== newSrc) {
     if (currentBackgroundMusic) {
@@ -171,11 +170,11 @@ if (connectWalletBtn) {
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const frogImg = new Image(); frogImg.src = "silver_robot_frog.png";
-const carImg = new Image(); carImg.src = "car.png";
-const car2Img = new Image(); car2Img.src = "car2.png";
-const car3Img = new Image(); car3Img.src = "car3.png";
-const bushImg = new Image(); bushImg.src = "bush.png";
+const frogImg = new Image(); frogImg.src = "/silver_robot_frog.png";
+const carImg = new Image(); carImg.src = "/car.png";
+const car2Img = new Image(); car2Img.src = "/car2.png";
+const car3Img = new Image(); car3Img.src = "/car3.png";
+const bushImg = new Image(); bushImg.src = "/bush.png";
 const carImages = [carImg, car2Img, car3Img];
 
 async function checkImagesLoaded() {
