@@ -1,3 +1,4 @@
+// game.js
 // ===== CONFIGURATION =====
 const REQUIRED_PEPEC_AMOUNT = "0"; // For testing, adjust for production
 const TOKEN_DECIMALS = 18;
@@ -420,7 +421,9 @@ async function submitScore(finalScore) {
 async function loadLeaderboard() {
   try {
     const response = await fetch('/api/leaderboard');
-    const leaderboard = await response.json();
+    const data = await response.json();
+    console.log('Leaderboard data received:', data);
+    const leaderboard = Array.isArray(data) ? data : [];
     const leaderboardList = document.getElementById('leaderboardList');
     leaderboardList.innerHTML = leaderboard.length === 0 
       ? '<li>No scores yet!</li>' 
