@@ -23,7 +23,7 @@ const preloadedAudio = {};
 
 function preloadAudio() {
   backgroundMusicFiles.forEach((file, index) => {
-    const src = window.location.origin + file;
+    const src = window.location.origin + "/" + file;
     preloadedAudio[index] = new Audio(src);
     preloadedAudio[index].loop = true;
     preloadedAudio[index].volume = 0.5;
@@ -35,7 +35,7 @@ preloadAudio();
 
 function updateBackgroundMusic(level) {
   const musicIndex = Math.min(level - 1, backgroundMusicFiles.length - 1);
-  const newSrc = window.location.origin + backgroundMusicFiles[musicIndex];
+  const newSrc = window.location.origin + "/" + backgroundMusicFiles[musicIndex];
   console.log("Attempting to switch music for Level", level, "to", newSrc);
   if (!currentBackgroundMusic || currentBackgroundMusic.src !== newSrc) {
     if (currentBackgroundMusic) {
