@@ -14,23 +14,26 @@ export default async function handler(req, res) {
       <meta name="fc:frame:button:1" content="Play Frogger">
       <meta name="fc:frame:button:1:action" content="launch_frame">
       <meta name="fc:frame:button:1:target" content="https://pepec-frogger.vercel.app/">
-      <meta name="fc:frame:state" content='{"walletRequired": true}'> <!-- Signal that a wallet is required -->
-      <script src="https://unpkg.com/frames.js@0.8.0"></script> <!-- Use a stable version for MWP compatibility -->
+      <meta name="fc:frame:state" content='{"walletRequired": true, "chainId": 8453}'> <!-- Specify Base chain for Farcaster wallet -->
+      <meta name="fc:frame:title" content="PEPEC FROGGER"> <!-- Optional: Improve accessibility -->
+      <meta name="fc:frame:description" content="Dodge cars, collect points, and survive with your Farcaster wallet!"> <!-- Optional: Improve accessibility -->
+      <script src="https://unpkg.com/frames.js@0.8.0"></script> <!-- Stable version for MWP -->
       <script>
         document.addEventListener('DOMContentLoaded', () => {
           try {
             const sdk = new Frames();
             sdk.ready({
-              walletRequired: true, // Signal MWP wallet readiness
-              onWalletConnect: () => {
-                console.log('Wallet connected via MWP');
-                // Optionally handle wallet connection (e.g., verify Farcaster ID or Ethereum address)
+              walletRequired: true,
+              chainId: 8453, // Specify Base chain for Farcaster wallet compatibility
+              onWalletConnect: (wallet) => {
+                console.log('Farcaster wallet connected via MWP:', wallet.address);
+                // Optionally verify wallet is on Base (chain ID 8453)
               },
               onError: (error) => {
                 console.error('Frames SDK error:', error);
               }
             });
-            console.log('Frames SDK loaded and ready with MWP support');
+            console.log('Frames SDK loaded and ready with MWP and Farcaster wallet support');
           } catch (error) {
             console.error('Error initializing Frames SDK:', error);
           }
