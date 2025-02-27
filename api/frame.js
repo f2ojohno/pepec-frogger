@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       <meta name="fc:frame:button:1" content="Play Frogger">
       <meta name="fc:frame:button:1:action" content="launch_frame">
       <meta name="fc:frame:button:1:target" content="https://pepec-frogger.vercel.app/game.html">
-      <script src="https://unpkg.com/@farcaster/frames.js@1.1.0"></script> <!-- Use latest version -->
+      <script src="https://unpkg.com/@farcaster/frames.js@1.2.0"></script> <!-- Use latest version -->
       <script>
         document.addEventListener('DOMContentLoaded', () => {
           try {
