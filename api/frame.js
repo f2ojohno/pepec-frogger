@@ -1,17 +1,33 @@
-import { Frog } from 'frog';
-
-export const app = new Frog({
-  title: 'PEPEC FROGGER',
-  basePath: '/api/frame',
-});
-
-app.frame('/', (c) => {
-  return c.res({
-    image: 'https://pepec-frogger.vercel.app/silver_robot_frog.png',
-    intents: [
-      { label: 'Play Frogger', action: 'launch_frame', target: 'https://pepec-frogger.vercel.app/game.html' },
-    ],
-  });
-});
-
-export default app;
+export default async function handler(req, res) {
+  if (req.method === 'POST') {
+    // Handle frame interaction (optional for now, can expand later)
+    return res.status(200).json({ success: true });
+  }
+  res.setHeader('Content-Type', 'text/html');
+  return res.status(200).send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="fc:frame" content="vNext">
+      <meta name="fc:frame:image" content="https://pepec-frogger.vercel.app/silver_robot_frog.png">
+      <meta name="fc:frame:button:1" content="Play Frogger">
+      <meta name="fc:frame:button:1:action" content="launch_frame">
+      <meta name="fc:frame:button:1:target" content="https://pepec-frogger.vercel.app/game.html">
+      <script src="https://unpkg.com/frames.js@0.7.0"></script> <!-- Use latest confirmed version -->
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          try {
+            const sdk = new Frames();
+            sdk.ready();
+            console.log('Frames SDK loaded and ready');
+          } catch (error) {
+            console.error('Error initializing Frames SDK:', error);
+          }
+        });
+      </script>
+    </head>
+    <body></body>
+    </html>
+  `);
+}
