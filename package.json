@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "frog": "latest"
+    "ethers": "^5.7.2"
   }
 }
