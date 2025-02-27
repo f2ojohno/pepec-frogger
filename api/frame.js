@@ -13,8 +13,10 @@ export default async function handler(req, res) {
       <meta name="fc:frame:image" content="https://pepec-frogger.vercel.app/silver_robot_frog.png">
       <meta name="fc:frame:button:1" content="Play Frogger">
       <meta name="fc:frame:button:1:action" content="launch_frame">
-      <meta name="fc:frame:button:1:target" content="https://pepec-frogger.vercel.app/game.html">
-      <script src="https://unpkg.com/frames.js@0.7.0"></script> <!-- Use latest confirmed version -->
+      <meta name="fc:frame:button:1:target" content="https://pepec-frogger.vercel.app/">
+      <meta name="fc:frame:title" content="PEPEC FROGGER">
+      <meta name="fc:frame:description" content="Dodge cars, collect points, and survive!">
+      <script src="https://unpkg.com/frames.js@latest"></script>
       <script>
         document.addEventListener('DOMContentLoaded', () => {
           try {
