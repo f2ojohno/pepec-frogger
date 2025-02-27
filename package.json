@@ -1,11 +1,5 @@
 {
-  "name": "pepec-frogger",
-  "version": "1.0.0",
-  "scripts": {
-    "start": "node server.js"
-  },
   "dependencies": {
-    "@vercel/kv": "^0.2.3",
-    "ethers": "^5.7.2"
+    "frog": "latest"
   }
 }
