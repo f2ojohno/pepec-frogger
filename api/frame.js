@@ -1,3 +1,5 @@
+import { ConnectWallet } from 'onchainkit'; // Import OnchainKit wallet component
+
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     // Handle frame interaction (e.g., wallet actions or state updates)
@@ -14,39 +16,43 @@ export default async function handler(req, res) {
       <meta name="fc:frame:button:1" content="Play Frogger">
       <meta name="fc:frame:button:1:action" content="launch_frame">
       <meta name="fc:frame:button:1:target" content="https://pepec-frogger.vercel.app/">
-      <meta name="fc:frame:state" content='{"walletRequired": true, "chainId": 8453, "farcasterWallet": true}'> <!-- Explicitly signal Farcaster wallet -->
+      <meta name="fc:frame:state" content='{"walletRequired": true, "chainId": 8453, "farcasterWallet": true}'>
       <meta name="fc:frame:title" content="PEPEC FROGGER">
       <meta name="fc:frame:description" content="Dodge cars, collect points, and survive with your Farcaster wallet!">
-      <script src="https://unpkg.com/frames.js@0.8.0"></script> <!-- Stable version for Farcaster Frames -->
+      <script src="https://unpkg.com/frames.js@0.8.0"></script>
+      <script src="https://unpkg.com/react@18"></script>
+      <script src="https://unpkg.com/react-dom@18"></script>
+      <script src="https://unpkg.com/onchainkit@latest/dist/index.umd.js"></script> <!-- OnchainKit UMD bundle -->
       <script>
         document.addEventListener('DOMContentLoaded', () => {
           try {
-            const sdk = new Frames();
-            sdk.ready({
-              walletRequired: true,
-              chainId: 8453, // Base chain for Farcaster wallet
-              farcasterWallet: true, // Explicitly request Farcaster wallet via MWP
-              onWalletConnect: (wallet) => {
-                console.log('Farcaster wallet connected via MWP:', wallet.address);
-                // Optionally verify wallet is on Base (chain ID 8453)
-                if (wallet.chainId !== 8453) {
-                  console.warn('Wallet not on Base chain, redirecting...');
-                  // Optional: Trigger chain switch if needed
-                  sdk.actions.openUrl({ url: 'https://warpcast.com/~/settings/connected-addresses' });
-                }
-              },
-              onError: (error) => {
-                console.error('Frames SDK error:', error);
-                // Handle specific errors (e.g., wallet not found)
-                if (error.message.includes('wallet not found')) {
-                  console.warn('Prompting user to connect Farcaster wallet...');
-                  sdk.actions.openUrl({ url: 'https://warpcast.com/~/settings/connected-addresses' });
-                }
-              }
-            });
-            console.log('Frames SDK loaded and ready with Farcaster wallet and MWP support');
+            const React = window.React;
+            const ReactDOM = window.ReactDOM;
+            const { ConnectWallet } = window.OnchainKit;
+
+            const App = () => (
+              <ConnectWallet
+                onConnect={(wallet) => {
+                  console.log('Wallet connected via OnchainKit:', wallet.address);
+                  // Signal frame readiness with wallet
+                  const sdk = new Frames();
+                  sdk.ready({
+                    walletRequired: true,
+                    chainId: 8453,
+                    farcasterWallet: true,
+                    onWalletConnect: (w) => console.log('Farcaster wallet connected:', w.address),
+                    onError: (error) => console.error('OnchainKit/Frames error:', error)
+                  });
+                  console.log('Frames SDK loaded and ready with OnchainKit wallet support');
+                }}
+                chainId={8453} // Base chain
+                appName="PEPEC Frogger"
+              />
+            );
+
+            ReactDOM.render(<App />, document.body);
           } catch (error) {
-            console.error('Error initializing Frames SDK:', error);
+            console.error('Error initializing OnchainKit/Frames:', error);
           }
         });
       </script>
