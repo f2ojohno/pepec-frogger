@@ -12,10 +12,14 @@
   <meta property="og:image" content="https://pepec-frogger.vercel.app/silver_robot_frog.png" />
   <meta property="og:url" content="https://pepec-frogger.vercel.app/" />
 
-  <!-- Frames v2 Embed Tag -->
-  <meta name="fc:frame" content='{"version":"next","imageUrl":"https://pepec-frogger.vercel.app/silver_robot_frog.png","button":{"title":"Play Frogger","action":{"type":"launch_frame","name":"PEPEC FROGGER","url":"https://pepec-frogger.vercel.app/"}}}' />
+  <!-- Frames v2 Embed Tags (Individual Meta Tags) -->
+  <meta name="fc:frame" content="vNext">
+  <meta name="fc:frame:image" content="https://pepec-frogger.vercel.app/silver_robot_frog.png">
+  <meta name="fc:frame:button:1" content="Play Frogger">
+  <meta name="fc:frame:button:1:action" content="launch_frame">
+  <meta name="fc:frame:button:1:target" content="https://pepec-frogger.vercel.app/">
 
-  <!-- CSP with unsafe-eval -->
+  <!-- CSP with minimal restrictions for testing -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://pepec-frogger.vercel.app; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://pepec-frogger.vercel.app https://warpcast.com; frame-ancestors 'self' https://warpcast.com https://*.warpcast.com;">
 
   <style>
@@ -217,6 +221,3 @@
   <script src="game.js"></script>
 </body>
 </html>
-
-
-
