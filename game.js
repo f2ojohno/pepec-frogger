@@ -1,5 +1,5 @@
 // game.js (Reverted to Original Sizes)
-const REQUIRED_PEPEC_AMOUNT = "0";
+const REQUIRED_PEPEC_AMOUNT = "500";
 const TOKEN_DECIMALS = 18;
 const requiredBalance = ethers.utils.parseUnits(REQUIRED_PEPEC_AMOUNT, TOKEN_DECIMALS);
 const pepecContractAddress = "0x1196c6704789620514fD25632aBe15F69a50bc4f";
